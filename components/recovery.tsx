@@ -21,8 +21,7 @@ export function Recovery({
         <ShieldCheck size={40} />
         <h2>First, let’s be sure.</h2>
         <p>
-          Verified matches will appear here with the next steps for a safe
-          handover.
+          Once we confirm an item is yours, you’ll see how to get it back here.
         </p>
         <a className="secondary" href="/">
           Back to overview <ArrowRight size={16} />
@@ -43,10 +42,10 @@ export function Recovery({
               {returned ? <Check /> : <ShieldCheck />}
             </div>
             <p className="eyebrow">
-              {returned ? "BACK WHERE IT BELONGS" : "OWNERSHIP VERIFIED"}
+              {returned ? "BACK WHERE IT BELONGS" : "OWNER CONFIRMED"}
             </p>
             <h2>
-              {returned ? "Reunited. And it feels good." : "One handover away."}
+              {returned ? "Reunited. And it feels good." : "Ready to return."}
             </h2>
             <p className="muted">
               {item?.name} · {c.id}
@@ -57,12 +56,12 @@ export function Recovery({
                   <span>Suggested meeting point</span>
                   <strong>{c.location}</strong>
                   <small>
-                    Arrange a handover at a staffed public campus location.
+                    Meet in a public place on campus where staff are nearby.
                   </small>
                 </div>
                 <p className="notice">
-                  Demo controls below simulate the two participants. Live
-                  accounts and private finder links are not connected.
+                  Try both sides of a return using the buttons below. This is
+                  practice only; no real owner or finder will be contacted.
                 </p>
                 <div className="confirmation-row">
                   <button
@@ -101,7 +100,7 @@ export function Recovery({
                   <>
                     <div className="reward-amount">₹20</div>
                     <p className="small muted">
-                      Completely optional. Your recovery is already complete.
+                      Completely optional. Your item is already back with you.
                     </p>
                     {payFor === c.id ? (
                       <form
@@ -156,7 +155,7 @@ export function Recovery({
                       className="secondary"
                       onClick={() => onReward(c.id, "PAID")}
                     >
-                      Demo: finder confirms payment received
+                      Practice: mark thank-you as received
                     </button>
                     <button
                       className="text-button"

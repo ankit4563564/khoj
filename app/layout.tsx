@@ -3,7 +3,7 @@ import "./globals.css";
 export const metadata: Metadata = {
   title: "KHOJ — A way back",
   description:
-    "Your belongings. Your campus. A way back. A campus lost-and-found prototype.",
+    "Your belongings. Your campus. A way back. A practice version of campus lost and found.",
 };
 export default function Layout({ children }: { children: React.ReactNode }) {
   return (

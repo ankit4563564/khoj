@@ -62,12 +62,12 @@ export default function LiveFinder({
         </h2>
         <p className="muted">
           {status === "HANDOVER"
-            ? "Ownership has been verified. Confirm here once you have returned the item."
+            ? "The owner has been confirmed. Let us know here once you return the item."
             : status === "RETURNED"
               ? "Both you and the owner confirmed the return. Thank you for helping."
               : status
-                ? "The report is awaiting a verified owner. Keep the item safe."
-                : "Checking your private case…"}
+                ? "We’re waiting to confirm who owns the item. Please keep it safe."
+                : "Checking your report…"}
         </p>
         {status === "HANDOVER" && (
           <button
@@ -94,7 +94,9 @@ export default function LiveFinder({
           </>
         )}
         {paid && (
-          <p className="positive">Your payment acknowledgement is recorded.</p>
+          <p className="positive">
+            You’ve confirmed that you received the thank-you.
+          </p>
         )}
         {error && (
           <p className="error" role="alert">
@@ -107,7 +109,7 @@ export default function LiveFinder({
             disabled={busy}
             onClick={() => update("status")}
           >
-            Refresh case status
+            Check for updates
           </button>
         )}
       </section>
@@ -120,12 +122,11 @@ export default function LiveFinder({
         </div>
         <h2>A small act. A big difference.</h2>
         <p>
-          Your report is saved. Keep the item safe while its owner is verified.
+          Your report is saved. Keep the item safe while we check who owns it.
         </p>
         <p className="notice">
           Save this private link. It lets you check the case and confirm the
-          handover without signing in. Anyone with the link can act as the
-          finder.
+          return without signing in. Anyone with the link can act as the finder.
         </p>
         <a className="primary" href={link}>
           Open my private case <ArrowRight size={17} />
@@ -210,7 +211,7 @@ export default function LiveFinder({
         <ArrowRight size={17} />
       </button>
       <p className="small muted centered">
-        No account. No OTP. Just a little kindness.
+        No account or sign-in code needed. Just a little kindness.
       </p>
     </form>
   );

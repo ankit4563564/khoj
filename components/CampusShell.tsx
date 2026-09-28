@@ -24,7 +24,7 @@ export function CampusShell({
         <nav>
           <Link href="/report">Report a find</Link>
           <Link href="/">
-            Explore demo <ArrowUpRight size={14} />
+            Try KHOJ <ArrowUpRight size={14} />
           </Link>
         </nav>
       </header>
@@ -44,14 +44,13 @@ export function CampusShell({
 export function SetupNotice() {
   return (
     <div className="form-panel">
-      <h2>The campus connection is next.</h2>
+      <h2>KHOJ is getting ready for your campus.</h2>
       <p className="muted">
-        The RV University workspace is built, but its Supabase service hasn’t
-        been configured yet. Sign-in and real reports will be available once it
-        is connected.
+        Sign-in and real reports are not available yet. You can try KHOJ with
+        example items while campus setup is being finished.
       </p>
       <Link className="primary" href="/">
-        Explore the working demo
+        Try the practice version
       </Link>
     </div>
   );

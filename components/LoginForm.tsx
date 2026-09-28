@@ -84,13 +84,12 @@ export default function LoginForm({
       )}
       {!configured && (
         <p className="notice">
-          Email sign-in is waiting for the campus Supabase connection. No email
-          will be sent yet.
+          Email sign-in is not ready yet. No email will be sent.
         </p>
       )}
       <p className="small muted">
-        <ShieldCheck size={16} /> Only verified @rvu.edu.in addresses can enter
-        the owner workspace.
+        <ShieldCheck size={16} /> Use your @rvu.edu.in email to sign in and
+        manage your items.
       </p>
     </form>
   );

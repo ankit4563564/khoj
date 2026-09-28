@@ -117,7 +117,7 @@ export default function Khoj({ view }: { view: string }) {
     }));
     notify(
       approved
-        ? "Demo review approved. Handover is ready."
+        ? "Practice claim approved. The item is ready to return."
         : "Claim rejected. The report is unclaimed again.",
     );
   }
@@ -150,7 +150,7 @@ export default function Khoj({ view }: { view: string }) {
     ],
     items: [
       "Keep your world close.",
-      "Register it once. We’ll help it find its way back.",
+      "Add it once. We’ll help it find its way back.",
     ],
     board: [
       "Still looking for home.",
@@ -166,7 +166,7 @@ export default function Khoj({ view }: { view: string }) {
     ],
     review: [
       "A thoughtful second look.",
-      "Demo review workspace · local sample data only.",
+      "Try checking a claim using example items.",
     ],
   };
   return (
@@ -214,12 +214,13 @@ export default function Khoj({ view }: { view: string }) {
             href="/review"
             className={`nav-link utility ${view === "review" ? "active" : ""}`}
           >
-            <ClipboardCheck size={18} /> Demo review
+            <ClipboardCheck size={18} /> Practice checks
           </Link>
           <div className="demo-note">
             <FlaskConical size={21} />
             <div>
-              Demo mode<small>Sample data. Saved in this browser.</small>
+              Practice version
+              <small>Example items. Saved only in this browser.</small>
             </div>
           </div>
           <Link className="college-link" href="/login">
@@ -229,7 +230,7 @@ export default function Khoj({ view }: { view: string }) {
           <div className="profile">
             <span className="avatar">A</span>
             <span>
-              A Student<small>Local demo workspace</small>
+              A Student<small>Your practice account</small>
             </span>
           </div>
         </div>
@@ -312,16 +313,18 @@ export default function Khoj({ view }: { view: string }) {
                         </h2>
                         <p>
                           {submitted
-                            ? "Your ownership description is waiting for a demo reviewer."
+                            ? "Your description is ready for a practice check."
                             : activeRecovery
-                              ? "View your handover or celebrate a completed return."
-                              : "Keep your important items registered, just in case."}
+                              ? "Arrange to get your item back or see a completed return."
+                              : "Save your important items here, just in case."}
                         </p>
                         <Link
                           href={submitted ? "/review" : "/recovery"}
                           className="text-link"
                         >
-                          {submitted ? "Open demo review" : "View recoveries"}
+                          {submitted
+                            ? "Check practice claims"
+                            : "View item returns"}
                           <ArrowRight size={16} />
                         </Link>
                       </div>
@@ -334,7 +337,7 @@ export default function Khoj({ view }: { view: string }) {
                     className="outline"
                     onClick={() => setDialog({ type: "register" })}
                   >
-                    <Plus size={18} /> Register an item
+                    <Plus size={18} /> Add an item
                   </button>
                 </div>
                 {view === "items" && (
@@ -431,7 +434,7 @@ export default function Khoj({ view }: { view: string }) {
                     <h3>Your details stay yours.</h3>
                     <p>
                       Identifying details are only shared after ownership is
-                      verified.
+                      confirmed.
                     </p>
                   </div>
                 </div>
@@ -463,8 +466,8 @@ export default function Khoj({ view }: { view: string }) {
                     return. It is optional and never guaranteed.
                   </p>
                   <div className="notice">
-                    You’re trying a local prototype. Reports and photos stay in
-                    this browser; they aren’t sent to your campus.
+                    You’re trying the practice version. Reports and photos stay
+                    in this browser; they aren’t sent to your campus.
                   </div>
                 </aside>
               </div>
@@ -540,7 +543,7 @@ export default function Khoj({ view }: { view: string }) {
                   </div>
                 )}
                 <p className="small muted board-note">
-                  <ShieldCheck size={17} /> Exact locations and identifying
+                  <ShieldCheck size={17} /> Exact locations and private item
                   photos stay hidden during claims.
                 </p>
               </>
@@ -551,9 +554,8 @@ export default function Khoj({ view }: { view: string }) {
             {view === "review" && (
               <>
                 <div className="notice">
-                  This is a local workflow demonstration, not an authenticated
-                  admin console. Review controls simulate a trusted campus
-                  reviewer.
+                  Try checking whether an item belongs to someone. These buttons
+                  are for practice only; they do not approve real claims.
                 </div>
                 <div className="review-list">
                   {data.cases
@@ -573,10 +575,10 @@ export default function Khoj({ view }: { view: string }) {
                             {c.id} ·{" "}
                             {c.source === "manual_claim"
                               ? "Unclaimed board claim"
-                              : "Sample AI candidate"}
+                              : "Example possible match"}
                           </p>
                           <dl>
-                            <dt>Registered identifying detail</dt>
+                            <dt>Private item detail</dt>
                             <dd>{item?.detail}</dd>
                             <dt>Owner’s description</dt>
                             <dd>{a?.answer}</dd>
@@ -587,19 +589,19 @@ export default function Khoj({ view }: { view: string }) {
                             <img
                               className="review-photo"
                               src={c.photo}
-                              alt="Private found report evidence"
+                              alt="Private photo of the found item"
                             />
                           )}
                           <p className="small muted">
-                            Compare the evidence carefully. A similar product
-                            alone does not prove ownership.
+                            Compare the photos and details carefully. A similar
+                            product alone does not prove ownership.
                           </p>
                           <div className="confirmation-row">
                             <button
                               className="primary"
                               onClick={() => review(c.id, true)}
                             >
-                              Demo: approve ownership <Check size={17} />
+                              Practice: approve claim <Check size={17} />
                             </button>
                             <button
                               className="secondary"
@@ -621,7 +623,7 @@ export default function Khoj({ view }: { view: string }) {
                     </p>
                     {activeRecovery && (
                       <Link href="/recovery" className="primary">
-                        Continue to handover <ArrowRight size={16} />
+                        Arrange the return <ArrowRight size={16} />
                       </Link>
                     )}
                   </div>
@@ -631,14 +633,16 @@ export default function Khoj({ view }: { view: string }) {
                   onClick={() => {
                     if (resetRequested) {
                       setData(structuredClone(seed));
-                      notify("Demo reset to sample data.");
+                      notify(
+                        "Practice changes cleared. Example items restored.",
+                      );
                       setResetRequested(false);
                     } else setResetRequested(true);
                   }}
                 >
                   {resetRequested
-                    ? "Confirm reset: remove local demo changes"
-                    : "Reset local demo"}
+                    ? "Yes, clear my practice changes"
+                    : "Start practice again"}
                 </button>
                 {resetRequested && (
                   <button
@@ -648,7 +652,7 @@ export default function Khoj({ view }: { view: string }) {
                     Cancel reset
                   </button>
                 )}
-                <h3 className="ledger-title">Verification history</h3>
+                <h3 className="ledger-title">Past claim checks</h3>
                 <div className="history">
                   {data.attempts.length ? (
                     data.attempts.map((a, i) => (
@@ -660,7 +664,7 @@ export default function Khoj({ view }: { view: string }) {
                       </div>
                     ))
                   ) : (
-                    <p className="muted">No verification attempts yet.</p>
+                    <p className="muted">No claims checked yet.</p>
                   )}
                 </div>
               </>
@@ -669,7 +673,7 @@ export default function Khoj({ view }: { view: string }) {
         )}
         <footer>
           KHOJ <span>A little kindness goes a long way.</span>
-          <span>Single-campus prototype</span>
+          <span>Campus lost and found · Practice version</span>
         </footer>
       </main>
       {toast && (
@@ -703,7 +707,7 @@ export default function Khoj({ view }: { view: string }) {
               onSave={(item) => {
                 setData((d) => ({ ...d, items: [...d.items, item] }));
                 setDialog(null);
-                notify("Your item is registered.");
+                notify("Your item is saved.");
               }}
             />
           ) : dialog.type === "lost" ? (
@@ -737,12 +741,12 @@ export default function Khoj({ view }: { view: string }) {
             >
               <p className="muted">
                 Describe a distinctive mark, engraving, damage, or accessory. We
-                keep the found item’s identifying details hidden until ownership
-                is verified.
+                keep the found item’s private details hidden until its owner is
+                confirmed.
               </p>
               {!dialog.case.itemId && (
                 <label>
-                  Which registered lost item is it?
+                  Which of your lost items is this?
                   <select name="item" required defaultValue="">
                     <option value="" disabled>
                       Select your item
@@ -760,13 +764,13 @@ export default function Khoj({ view }: { view: string }) {
               {!dialog.case.itemId &&
               !data.items.some((i) => i.status === "LOST") ? (
                 <p className="notice">
-                  Register your item and mark it lost before submitting a claim.{" "}
+                  Add your item and mark it as lost before claiming it.{" "}
                   <Link href="/items">Go to my items</Link>
                 </p>
               ) : (
                 <>
                   <label>
-                    Your identifying detail
+                    Your private item detail
                     <textarea
                       autoFocus
                       name="answer"
@@ -781,7 +785,7 @@ export default function Khoj({ view }: { view: string }) {
                     proof. Your description will go to manual review.
                   </p>
                   <button className="primary">
-                    Submit for verification <ArrowRight size={17} />
+                    Send for checking <ArrowRight size={17} />
                   </button>
                 </>
               )}
@@ -800,7 +804,7 @@ export default function Khoj({ view }: { view: string }) {
                 {dialog.item.status}
               </span>
               <p className="notice">
-                Your identifying detail is saved privately for review.
+                Your private item detail is saved privately for review.
               </p>
               {dialog.item.status === "SAFE" ? (
                 <button

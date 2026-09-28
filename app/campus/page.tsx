@@ -8,7 +8,7 @@ export default async function Page() {
   if (!backendConfigured())
     return (
       <CampusShell
-        title="Your campus workspace."
+        title="Your campus items."
         subtitle="Built for RV University."
       >
         <SetupNotice />

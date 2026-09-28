@@ -19,7 +19,7 @@ export function requireConfig() {
   if (!backendConfigured())
     throw new ApiError(
       503,
-      "The campus service is not connected yet. You can explore the local demo.",
+      "KHOJ is not ready for real reports yet. You can try the practice version.",
     );
 }
 export function siteOrigin() {
@@ -58,7 +58,7 @@ export async function rateLimit(
   });
   if (error) throw new ApiError(503, "Please try again in a moment.");
   if (!data)
-    throw new ApiError(429, "Too many requests. Please try again later.");
+    throw new ApiError(429, "Please wait a little before trying again.");
 }
 export function clientRateId(request: Request) {
   return process.env.VERCEL === "1"
@@ -69,7 +69,8 @@ export function clientRateId(request: Request) {
 export async function boundedRequest(request: Request, limit: number) {
   const length = Number(request.headers.get("content-length") || 0);
   if (length > limit) throw new ApiError(413, "Upload is too large.");
-  if (!request.body) throw new ApiError(400, "Request body is required.");
+  if (!request.body)
+    throw new ApiError(400, "Please fill in the form and try again.");
   const reader = request.body.getReader();
   const chunks: Uint8Array[] = [];
   let total = 0;
@@ -97,7 +98,7 @@ export async function readJson(request: Request) {
   try {
     return await req.json();
   } catch {
-    throw new ApiError(400, "Invalid request.");
+    throw new ApiError(400, "We couldn’t read your details. Please try again.");
   }
 }
 export function response(data: unknown, status = 200) {
@@ -111,7 +112,10 @@ export function failure(error: unknown) {
     return response({ error: error.message }, error.status);
   if (error instanceof ZodError)
     return response(
-      { error: error.issues[0]?.message || "Check the submitted fields." },
+      {
+        error:
+          "Please check your details, including any required fields, and try again.",
+      },
       400,
     );
   return response(

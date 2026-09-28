@@ -21,7 +21,7 @@ export function useStore() {
       }
     } catch {
       setStorageError(
-        "Saved demo data could not be read. This session starts with sample data.",
+        "Your saved practice changes could not be opened. We’ve loaded example items instead.",
       );
     }
     setReady(true);
@@ -32,7 +32,7 @@ export function useStore() {
         localStorage.setItem(key, JSON.stringify(data));
       } catch {
         setStorageError(
-          "Browser storage is full or unavailable. Changes will last only for this session.",
+          "This browser cannot save your changes. They may be lost when you close or reload this page.",
         );
       }
   }, [data, ready]);

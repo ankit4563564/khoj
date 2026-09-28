@@ -29,7 +29,7 @@ export async function cleanPhoto(file: File) {
   } catch {
     throw new ApiError(
       400,
-      "The photo could not be decoded. Try another image.",
+      "This photo could not be opened. Try another photo.",
     );
   }
 }

@@ -32,7 +32,7 @@ export function RegisterForm({ onSave }: { onSave: (item: Item) => void }) {
   return (
     <form onSubmit={submit} className="form">
       <p className="muted">
-        Register it once. Give it a better chance of finding its way back.
+        Add it once. Give it a better chance of finding its way back.
       </p>
       <UploadPhotos multiple onChange={setPhotos} />
       <label>
@@ -59,7 +59,7 @@ export function RegisterForm({ onSave }: { onSave: (item: Item) => void }) {
         </label>
       </div>
       <label>
-        One unique identifying detail
+        A detail only you would know
         <textarea
           name="detail"
           placeholder="A scratch, engraving, sticker, or something only you would know…"
@@ -69,8 +69,8 @@ export function RegisterForm({ onSave }: { onSave: (item: Item) => void }) {
         />
       </label>
       <small className="privacy-note">
-        <ShieldCheck size={16} /> This detail stays private and helps verify
-        ownership.
+        <ShieldCheck size={16} /> This detail stays private and helps show that
+        the item is yours.
       </small>
       {error && (
         <p role="alert" className="error">
@@ -78,7 +78,7 @@ export function RegisterForm({ onSave }: { onSave: (item: Item) => void }) {
         </p>
       )}
       <button className="primary" type="submit">
-        Register item <ArrowRight size={17} />
+        Save item <ArrowRight size={17} />
       </button>
     </form>
   );
@@ -132,7 +132,7 @@ export function FoundForm({
           help desk.
         </p>
         <div className="notice">
-          Demo: no AI search or notifications have been sent.
+          Practice only: no search has been run and no one has been contacted.
         </div>
         {!subscribed ? (
           <form
@@ -155,12 +155,12 @@ export function FoundForm({
               />
             </label>
             <p className="muted small">
-              Demo only: saves to this browser. SMS delivery is not connected.
+              Saved only in this browser. No text messages will be sent.
             </p>
-            <button className="secondary">Save contact preference</button>
+            <button className="secondary">Save phone number</button>
           </form>
         ) : (
-          <p className="positive">Contact preference saved.</p>
+          <p className="positive">Phone number saved.</p>
         )}
         <a href="/board" className="text-link">
           View unclaimed board <ArrowRight size={16} />
@@ -204,7 +204,7 @@ export function FoundForm({
         Submit found item <ArrowRight size={18} />
       </button>
       <p className="small muted centered">
-        No account. No OTP. Just a little kindness.
+        No account or sign-in code needed. Just a little kindness.
       </p>
     </form>
   );

@@ -131,7 +131,7 @@ export default function LiveWorkspace({ email }: { email: string }) {
       try {
         await api("/api/owner/items", f);
         setDialog(null);
-        setMessage("Your item is registered.");
+        setMessage("Your item is saved.");
         await load();
       } catch (e) {
         setError((e as Error).message);
@@ -173,7 +173,7 @@ export default function LiveWorkspace({ email }: { email: string }) {
         <div
           className="workspace-tabs"
           role="tablist"
-          aria-label="Campus workspace"
+          aria-label="Your campus items"
         >
           {["items", "board", "recoveries", "review"].map((s) => (
             <button
@@ -199,7 +199,7 @@ export default function LiveWorkspace({ email }: { email: string }) {
                   ? "Unclaimed"
                   : s === "review"
                     ? "Staff review"
-                    : "Recoveries"}
+                    : "Item returns"}
             </button>
           ))}
         </div>
@@ -243,7 +243,7 @@ export default function LiveWorkspace({ email }: { email: string }) {
                     setDialog({ type: "register" });
                   }}
                 >
-                  <Plus size={18} /> Register an item
+                  <Plus size={18} /> Add an item
                 </button>
               </div>
               {state.matches
@@ -253,9 +253,9 @@ export default function LiveWorkspace({ email }: { email: string }) {
                     <div>
                       <h3>Something familiar turned up.</h3>
                       <p className="muted">
-                        A candidate for{" "}
+                        A possible match for{" "}
                         {items.find((i) => i.id === m.item_id)?.name}. Ownership
-                        still needs verification.
+                        still needs to be checked.
                       </p>
                     </div>
                     <button
@@ -307,8 +307,8 @@ export default function LiveWorkspace({ email }: { email: string }) {
           {section === "board" && (
             <>
               <p className="muted">
-                Only broad locations are shown. Describe the item before
-                handover details can be shared.
+                Only broad locations are shown. Describe the item before meeting
+                details can be shared.
               </p>
               <div className="board-grid">
                 {state.board.map((r) => (
@@ -360,7 +360,7 @@ export default function LiveWorkspace({ email }: { email: string }) {
                     <h2>
                       {r.status === "RETURNED"
                         ? "Reunited. And it feels good."
-                        : "One handover away."}
+                        : "Ready to return."}
                     </h2>
                     <p className="muted">
                       {items.find((i) => i.id === match?.item_id)?.name}
@@ -368,11 +368,11 @@ export default function LiveWorkspace({ email }: { email: string }) {
                     {r.status !== "RETURNED" ? (
                       <>
                         <div className="handover-location">
-                          <span>Handover location</span>
+                          <span>Meeting place</span>
                           <strong>{r.location}</strong>
                           <small>
-                            Arrange a handover at a staffed public campus
-                            location.
+                            Meet in a public place on campus where staff are
+                            nearby.
                           </small>
                         </div>
                         <button
@@ -388,7 +388,7 @@ export default function LiveWorkspace({ email }: { email: string }) {
                           }
                         >
                           {r.owner_confirmed
-                            ? "You confirmed receipt"
+                            ? "You received the item"
                             : "I received my item"}
                         </button>
                         <p className="small muted">
@@ -458,7 +458,7 @@ export default function LiveWorkspace({ email }: { email: string }) {
                           <p className="positive">
                             {reward?.status === "PAID"
                               ? "Finder confirmed the thank-you."
-                              : "All done. Your recovery is complete."}
+                              : "All done. Your item is back with you."}
                           </p>
                         )}
                       </>
@@ -471,7 +471,7 @@ export default function LiveWorkspace({ email }: { email: string }) {
                   <h2>First, let’s be sure.</h2>
                   <p>
                     Approved claims appear here. Your ownership description must
-                    be reviewed before a handover.
+                    be checked before the item is returned.
                   </p>
                 </div>
               )}
@@ -483,7 +483,7 @@ export default function LiveWorkspace({ email }: { email: string }) {
                 <section className="review-card" key={r.match_id}>
                   <h2>{r.item_name}</h2>
                   <dl>
-                    <dt>Registered detail</dt>
+                    <dt>Saved item detail</dt>
                     <dd>{r.registered_detail}</dd>
                     <dt>Owner description</dt>
                     <dd>{r.owner_answer}</dd>
@@ -494,7 +494,7 @@ export default function LiveWorkspace({ email }: { email: string }) {
                     <img
                       className="review-photo"
                       src={r.photo}
-                      alt="Private found-item evidence"
+                      alt="Private photo of the found item"
                     />
                   )}
                   <div className="confirmation-row">
@@ -596,10 +596,10 @@ export default function LiveWorkspace({ email }: { email: string }) {
                   />
                 </label>
                 <p className="small muted">
-                  Up to 3 MB each. Photos stay in private campus storage.
+                  Up to 3 MB each. Your photos are kept private.
                 </p>
                 <label>
-                  One unique identifying detail
+                  A detail only you would know
                   <textarea
                     name="detail"
                     required
@@ -638,11 +638,12 @@ export default function LiveWorkspace({ email }: { email: string }) {
               <>
                 <p className="muted">
                   Describe a mark, engraving, damage or accessory only the owner
-                  would know. A reviewer checks the evidence before handover.
+                  would know. A campus helper checks these details before the
+                  item is returned.
                 </p>
                 {dialog.type === "claim" && (
                   <label>
-                    Your registered lost item
+                    Your lost item
                     <select name="itemId" defaultValue="" required>
                       <option value="" disabled>
                         Select a lost item
@@ -658,7 +659,7 @@ export default function LiveWorkspace({ email }: { email: string }) {
                   </label>
                 )}
                 <label>
-                  Your identifying detail
+                  Your private item detail
                   <textarea
                     name="answer"
                     required
@@ -677,12 +678,12 @@ export default function LiveWorkspace({ email }: { email: string }) {
               {busy
                 ? "Saving…"
                 : dialog.type === "register"
-                  ? "Register item"
+                  ? "Save item"
                   : dialog.type === "lost"
                     ? "Mark as lost"
                     : dialog.type === "reward"
                       ? "Prepare thank-you"
-                      : "Submit for verification"}
+                      : "Send for checking"}
               <ArrowRight size={17} />
             </button>
           </form>
@@ -696,9 +697,7 @@ function ShoppingPrompt() {
     <>
       <ShieldCheck size={35} />
       <h2>Start with something important.</h2>
-      <p>
-        Register your belongings with a few photos and a detail only you know.
-      </p>
+      <p>Add your belongings with a few photos and a detail only you know.</p>
     </>
   );
 }
