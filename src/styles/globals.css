@@ -383,47 +383,260 @@ code, pre, .font-mono {
   color: var(--accent-primary);
 }
 
-/* Layout Utilities */
-.container {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 0 20px;
+/* ==========================================================================
+   PHONE-ONLY CONTAINER & MOBILE APP SHELL
+   ========================================================================== */
+
+/* Outer wrapper for centering phone view on larger screens */
+.phone-frame-wrapper {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  min-height: 100vh;
+  width: 100%;
+  background: radial-gradient(circle at 50% 20%, #0d1220 0%, #050609 80%);
 }
 
-.container-narrow {
-  max-width: 820px;
-  margin: 0 auto;
-  padding: 0 20px;
+@media (min-width: 481px) {
+  .phone-frame-wrapper {
+    padding: 24px 16px;
+  }
 }
 
-.grid-cols-2 {
+/* The phone device mockup / viewport */
+.phone-device {
+  width: 100%;
+  max-width: 430px; /* iPhone 15/16 Pro Max viewport width */
+  min-height: 100vh;
+  background: var(--bg-primary);
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  overflow-x: hidden;
+}
+
+@media (min-width: 481px) {
+  .phone-device {
+    border-radius: 46px;
+    border: 9px solid #1c2233;
+    box-shadow: 
+      0 0 0 2px rgba(255, 255, 255, 0.12),
+      0 25px 70px -10px rgba(0, 0, 0, 0.95),
+      0 0 50px rgba(99, 102, 241, 0.25);
+    min-height: calc(100vh - 48px);
+    max-height: 940px;
+    overflow-y: auto;
+    overflow-x: hidden;
+  }
+}
+
+@media (max-width: 480px) {
+  .phone-device {
+    max-width: 100%;
+    border-radius: 0;
+    border: none;
+    box-shadow: none;
+  }
+}
+
+/* Smartphone Top Status Bar */
+.phone-status-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 22px 6px 22px;
+  background: rgba(7, 9, 14, 0.98);
+  backdrop-filter: blur(12px);
+  position: sticky;
+  top: 0;
+  z-index: 60;
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: #f8fafc;
+  letter-spacing: -0.01em;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.phone-dynamic-island {
+  width: 110px;
+  height: 24px;
+  background: #000000;
+  border-radius: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 10px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.6);
+}
+
+.phone-island-camera {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #0c1220;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.phone-island-indicator {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #10b981;
+  box-shadow: 0 0 6px #10b981;
+}
+
+/* Bottom Safe Area / Home Indicator */
+.phone-home-indicator-bar {
+  width: 130px;
+  height: 4px;
+  background: rgba(255, 255, 255, 0.35);
+  border-radius: 10px;
+  margin: 8px auto 6px auto;
+  flex-shrink: 0;
+}
+
+/* Mobile Fixed Bottom Navigation Bar */
+.mobile-bottom-nav {
+  position: fixed;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100%;
+  max-width: 430px;
+  background: rgba(11, 15, 25, 0.95);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-top: 1px solid rgba(255, 255, 255, 0.12);
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  padding: 8px 6px 6px 6px;
+  z-index: 55;
+  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.6);
+}
+
+@media (max-width: 480px) {
+  .mobile-bottom-nav {
+    left: 0;
+    transform: none;
+    max-width: 100%;
+  }
+}
+
+.mobile-nav-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  padding: 6px 10px;
+  text-decoration: none;
+  font-size: 0.68rem;
+  font-weight: 700;
+  color: #94a3b8;
+  border-radius: 12px;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  position: relative;
+}
+
+.mobile-nav-item.active {
+  color: #ff5c35;
+}
+
+.mobile-nav-item:active {
+  transform: scale(0.92);
+}
+
+.mobile-nav-fab {
+  background: linear-gradient(135deg, #ff5c35 0%, #e04520 100%);
+  color: #ffffff !important;
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 18px rgba(255, 92, 53, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.35);
+  margin-top: -18px;
+  border: 2px solid rgba(255, 255, 255, 0.25);
+  transition: all 0.2s ease;
+  text-decoration: none;
+}
+
+.mobile-nav-fab:active {
+  transform: scale(0.92);
+}
+
+/* ==========================================================================
+   PHONE-ONLY LAYOUT & GRID UTILITIES
+   ========================================================================== */
+
+.container, .container-narrow {
+  width: 100%;
+  max-width: 100% !important;
+  padding: 0 16px !important;
+  margin: 0 auto;
+}
+
+/* All grids collapse to single-column by default for phone-only view */
+.grid-cols-2, .grid-cols-3, .grid-cols-4 {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 14px;
+}
+
+/* Compact 2-column grid for mini stat chips or dual photo view */
+.grid-cols-2-compact {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 20px;
+  gap: 10px;
 }
 
-.grid-cols-3 {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 20px;
+/* Ensure headings look great on smartphone screens */
+h1 {
+  font-size: 1.85rem !important;
+  line-height: 1.15 !important;
 }
 
-.grid-cols-4 {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 16px;
+h2 {
+  font-size: 1.45rem !important;
+  line-height: 1.2 !important;
 }
 
-@media (max-width: 900px) {
-  .grid-cols-3, .grid-cols-4 {
-    grid-template-columns: repeat(2, 1fr);
-  }
+h3 {
+  font-size: 1.18rem !important;
+  line-height: 1.25 !important;
 }
 
-@media (max-width: 640px) {
-  .grid-cols-2, .grid-cols-3, .grid-cols-4 {
-    grid-template-columns: 1fr;
-  }
+/* Modal sizing for phone screens */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.78);
+  backdrop-filter: blur(8px);
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  z-index: 100;
+  padding: 0;
+}
+
+.modal-content {
+  background: #111625;
+  border-top: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 28px 28px 0 0;
+  width: 100%;
+  max-width: 430px;
+  max-height: 88vh;
+  overflow-y: auto;
+  padding: 24px 18px;
+  box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.8);
+  animation: slide-up-mobile 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes slide-up-mobile {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
 }
 
 /* Toast Animation */
@@ -440,19 +653,20 @@ code, pre, .font-mono {
 
 /* Custom Scrollbar */
 ::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+  width: 4px;
+  height: 4px;
 }
 
 ::-webkit-scrollbar-track {
-  background: var(--bg-primary);
+  background: transparent;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #1c2333;
+  background: rgba(255, 255, 255, 0.16);
   border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #28334a;
+  background: rgba(255, 255, 255, 0.28);
 }
+

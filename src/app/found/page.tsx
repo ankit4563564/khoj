@@ -128,18 +128,18 @@ export default function FoundPage() {
   };
 
   return (
-    <div style={{ padding: '40px 0' }}>
+    <div style={{ padding: '16px 0' }}>
       <div className="container-narrow">
         
         {/* Header */}
         {!submittedCaseId && (
-          <div style={{ textAlign: 'center', marginBottom: '36px' }}>
-            <div className="eyebrow" style={{ color: '#ff5c35' }}>Zero-Friction Finder Protocol (PRD Section 6)</div>
-            <h1 style={{ fontSize: '2.5rem', fontWeight: 900, marginTop: '4px' }}>
+          <div style={{ textAlign: 'center', marginBottom: '24px' }}>
+            <div className="eyebrow" style={{ color: '#ff5c35', fontSize: '0.68rem' }}>Zero-Friction Finder Protocol</div>
+            <h1 style={{ fontSize: '1.65rem', fontWeight: 900, marginTop: '4px' }}>
               Found Something on Campus?
             </h1>
-            <p style={{ color: '#94a3b8', fontSize: '0.98rem', maxWidth: '540px', margin: '8px auto 0 auto' }}>
-              No login. No account. No password. No OTP. Simply snap a photo and KHOJ will match it against registered belongings.
+            <p style={{ color: '#94a3b8', fontSize: '0.82rem', margin: '6px auto 0 auto' }}>
+              No login. No account. No OTP. Simply snap a photo to match against registered belongings.
             </p>
           </div>
         )}
@@ -279,7 +279,7 @@ export default function FoundPage() {
           </div>
         ) : (
           /* Form (PRD Section 6) */
-          <div className="glass-panel" style={{ padding: '36px', background: '#0e121d' }}>
+          <div className="glass-panel" style={{ padding: '20px 16px', background: '#0e121d' }}>
             
             {/* Quick Demo Pre-fills */}
             <div style={{ marginBottom: '24px' }}>

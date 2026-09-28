@@ -98,19 +98,21 @@ export default function VerifyPage() {
   }
 
   return (
-    <div style={{ padding: '40px 0' }}>
+    <div style={{ padding: '16px 0' }}>
       <div className="container-narrow">
         
         {/* Core Loop Step Breadcrumbs */}
         <div style={{
           display: 'flex',
-          justifyContent: 'center',
+          justifyContent: 'flex-start',
           alignItems: 'center',
-          gap: '8px',
-          flexWrap: 'wrap',
-          marginBottom: '24px',
-          fontSize: '0.8rem',
-          color: '#cbd5e1'
+          gap: '6px',
+          overflowX: 'auto',
+          paddingBottom: '8px',
+          marginBottom: '20px',
+          fontSize: '0.72rem',
+          color: '#cbd5e1',
+          WebkitOverflowScrolling: 'touch'
         }}>
           <span style={{ padding: '4px 10px', borderRadius: '8px', background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.18)', color: '#cbd5e1' }}>1. Register</span>
           <span style={{ color: '#94a3b8' }}>&rarr;</span>

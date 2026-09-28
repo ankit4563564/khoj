@@ -53,17 +53,17 @@ export default function UnclaimedPage() {
   };
 
   return (
-    <div style={{ padding: '40px 0' }}>
+    <div style={{ padding: '16px 0' }}>
       <div className="container">
         
         {/* Header */}
-        <div style={{ textAlign: 'center', marginBottom: '36px' }}>
-          <div className="eyebrow" style={{ color: '#06b6d4' }}>PRD V1.5 Section 16 Gallery</div>
-          <h1 style={{ fontSize: '2.4rem', fontWeight: 800, marginTop: '4px' }}>
-            Campus Unclaimed Gallery
+        <div style={{ textAlign: 'center', marginBottom: '22px' }}>
+          <div className="eyebrow" style={{ color: '#06b6d4', fontSize: '0.68rem' }}>Campus Gallery</div>
+          <h1 style={{ fontSize: '1.65rem', fontWeight: 800, marginTop: '4px' }}>
+            Unclaimed Items
           </h1>
-          <p style={{ color: '#94a3b8', fontSize: '0.92rem', maxWidth: '620px', margin: '8px auto 0 auto' }}>
-            Found items waiting for their student owner. To prevent dishonest claims, all identifying marks and high-resolution images are strictly redacted.
+          <p style={{ color: '#94a3b8', fontSize: '0.8rem', margin: '4px auto 0 auto' }}>
+            Identifying details are redacted. Click "This is mine" to initiate blind verification.
           </p>
         </div>
 
@@ -71,40 +71,40 @@ export default function UnclaimedPage() {
         <div style={{
           display: 'flex',
           alignItems: 'center',
-          gap: '14px',
-          padding: '16px 20px',
-          borderRadius: '14px',
+          gap: '10px',
+          padding: '12px 14px',
+          borderRadius: '12px',
           background: 'rgba(6, 182, 212, 0.08)',
           border: '1px solid rgba(6, 182, 212, 0.25)',
           color: '#e0f2fe',
-          maxWidth: '820px',
-          margin: '0 auto 36px auto',
-          fontSize: '0.85rem'
+          margin: '0 auto 20px auto',
+          fontSize: '0.76rem'
         }}>
-          <Lock style={{ width: '22px', height: '22px', color: '#22d3ee', flexShrink: 0 }} />
+          <Lock style={{ width: '18px', height: '18px', color: '#22d3ee', flexShrink: 0 }} />
           <div>
-            <strong>Strict Campus Redaction Standard:</strong> Exact timestamps, serial numbers, and un-cropped photos are suppressed. If an item belongs to you, click "This is mine" to initiate the verification pipeline with source <code>manual_claim</code>.
+            <strong>Campus Redaction:</strong> Timestamps and high-res photos are suppressed until verified.
           </div>
         </div>
 
-        {/* Filters */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px', marginBottom: '28px' }}>
-          <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+        {/* Filters: Horizontal scroll on mobile */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '20px' }}>
+          <div style={{ display: 'flex', gap: '6px', overflowX: 'auto', paddingBottom: '6px', WebkitOverflowScrolling: 'touch' }}>
             {['all', 'Earbuds', 'Phone', 'Laptop', 'Charger', 'Water Bottle', 'Watch', 'ID Card'].map(cat => (
               <button
                 key={cat}
                 onClick={() => setCategoryFilter(cat)}
                 style={{
-                  padding: '7px 16px',
+                  padding: '6px 14px',
                   borderRadius: '9999px',
-                  fontSize: '0.84rem',
+                  fontSize: '0.76rem',
                   fontWeight: 700,
                   border: categoryFilter === cat ? '1px solid #ff5c35' : '1px solid rgba(255, 255, 255, 0.22)',
                   cursor: 'pointer',
                   background: categoryFilter === cat ? '#ff5c35' : 'rgba(255, 255, 255, 0.1)',
                   color: categoryFilter === cat ? '#ffffff' : '#e2e8f0',
-                  boxShadow: categoryFilter === cat ? '0 4px 14px rgba(255, 92, 53, 0.4)' : 'none',
-                  transition: 'all 0.15s ease'
+                  boxShadow: categoryFilter === cat ? '0 2px 8px rgba(255, 92, 53, 0.4)' : 'none',
+                  whiteSpace: 'nowrap',
+                  flexShrink: 0
                 }}
               >
                 {cat === 'all' ? 'All Items' : cat}
@@ -112,13 +112,13 @@ export default function UnclaimedPage() {
             ))}
           </div>
 
-          <div style={{ position: 'relative', minWidth: '240px' }}>
+          <div style={{ position: 'relative', width: '100%' }}>
             <Search style={{ width: '16px', height: '16px', color: '#cbd5e1', position: 'absolute', left: '12px', top: '12px' }} />
             <input
               type="text"
               placeholder="Search location..."
               className="form-input"
-              style={{ paddingLeft: '36px', paddingRight: '12px', paddingBlock: '8px', fontSize: '0.88rem' }}
+              style={{ paddingLeft: '36px', paddingRight: '12px', paddingBlock: '8px', fontSize: '0.84rem' }}
               value={searchQuery}
               onChange={e => setSearchQuery(e.target.value)}
             />

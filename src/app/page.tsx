@@ -90,7 +90,7 @@ export default function HomePage() {
   ];
 
   return (
-    <div style={{ padding: '40px 0' }}>
+    <div style={{ padding: '16px 0' }}>
       <div className="container">
         
         {/* Pilot Badge */}
@@ -98,38 +98,38 @@ export default function HomePage() {
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          gap: '10px',
-          padding: '8px 20px',
+          gap: '8px',
+          padding: '6px 14px',
           background: 'rgba(255, 92, 53, 0.1)',
           border: '1px solid rgba(255, 92, 53, 0.35)',
           borderRadius: '9999px',
           maxWidth: 'fit-content',
-          margin: '0 auto 28px auto',
-          fontSize: '0.84rem',
+          margin: '0 auto 18px auto',
+          fontSize: '0.72rem',
           color: '#ffc1b2',
-          boxShadow: '0 0 20px rgba(255, 92, 53, 0.2)'
+          boxShadow: '0 0 16px rgba(255, 92, 53, 0.2)'
         }}>
           <span style={{
             display: 'inline-block',
-            width: '8px',
-            height: '8px',
+            width: '6px',
+            height: '6px',
             borderRadius: '50%',
             backgroundColor: '#10b981',
-            boxShadow: '0 0 10px #10b981'
+            boxShadow: '0 0 8px #10b981'
           }} />
-          <span>Active Pilot: Single College Campus Network</span>
+          <span>Campus Pilot V1.5</span>
           <span style={{ color: '#ff5c35' }}>•</span>
-          <span style={{ color: '#ffffff', fontWeight: 700 }}>V1.5 Specification</span>
+          <span style={{ color: '#ffffff', fontWeight: 700 }}>Zero-Friction</span>
         </div>
 
-        {/* Hero Section */}
-        <div style={{ textAlign: 'center', maxWidth: '860px', margin: '0 auto 60px auto' }}>
+        {/* Mobile Hero Section */}
+        <div style={{ textAlign: 'center', marginBottom: '32px' }}>
           <h1 style={{
-            fontSize: 'clamp(2.5rem, 5.2vw, 4.4rem)',
+            fontSize: '1.85rem',
             fontWeight: 900,
-            lineHeight: 1.08,
+            lineHeight: 1.15,
             letterSpacing: '-0.035em',
-            marginBottom: '24px',
+            marginBottom: '14px',
             background: 'linear-gradient(180deg, #FFFFFF 40%, #94A3B8 100%)',
             WebkitBackgroundClip: 'text',
             WebkitTextFillColor: 'transparent',
@@ -143,108 +143,106 @@ export default function HomePage() {
           </h1>
 
           <p style={{
-            fontSize: '1.15rem',
+            fontSize: '0.88rem',
             color: '#94a3b8',
-            lineHeight: 1.6,
-            marginBottom: '36px',
-            maxWidth: '680px',
-            margin: '0 auto 36px auto'
+            lineHeight: 1.5,
+            marginBottom: '22px',
           }}>
             Students register item photos and secret distinguishing details before they are lost. 
-            When someone finds an item, KHOJ matches the visual identity without anyone needing to broadcast on WhatsApp.
+            When someone finds an item, KHOJ matches visual identity with zero login hassle.
           </p>
 
-          {/* Action CTAs */}
-          <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: '16px', marginBottom: '40px' }}>
+          {/* Action CTAs stacked for Mobile */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '20px' }}>
             <Link 
               href="/dashboard" 
               className="btn-primary" 
-              style={{ padding: '16px 36px', fontSize: '1.05rem', boxShadow: '0 8px 30px rgba(255, 92, 53, 0.45)' }}
+              style={{ width: '100%', padding: '14px 20px', fontSize: '0.94rem' }}
             >
-              <ShieldCheck style={{ width: '20px', height: '20px' }} />
-              <span>Protect Belongings (Student Login)</span>
+              <ShieldCheck style={{ width: '18px', height: '18px' }} />
+              <span>Protect Belongings (Student)</span>
             </Link>
 
             <Link 
               href="/found" 
               className="btn-secondary"
-              style={{ padding: '16px 36px', fontSize: '1.05rem' }}
+              style={{ width: '100%', padding: '13px 20px', fontSize: '0.94rem' }}
             >
-              <Search style={{ width: '20px', height: '20px', color: '#ff5c35' }} />
+              <Search style={{ width: '18px', height: '18px', color: '#ff5c35' }} />
               <span>Found an Item? (Zero Login)</span>
             </Link>
           </div>
 
-          <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '24px', fontSize: '0.82rem', color: '#64748b', flexWrap: 'wrap' }}>
-            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <CheckCircle2 style={{ width: '15px', height: '15px', color: '#10b981' }} />
-              Free for all students
+          <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '8px', fontSize: '0.72rem', color: '#64748b', flexWrap: 'wrap' }}>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+              <CheckCircle2 style={{ width: '13px', height: '13px', color: '#10b981' }} />
+              Free for campus
             </span>
             <span>•</span>
-            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <Lock style={{ width: '15px', height: '15px', color: '#06b6d4' }} />
-              Blind Ownership Verification
+            <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+              <Lock style={{ width: '13px', height: '13px', color: '#06b6d4' }} />
+              Blind Verification
             </span>
             <span>•</span>
-            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <Sparkles style={{ width: '15px', height: '15px', color: '#f59e0b' }} />
-              Transparent Score Breakdown
+            <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+              <Sparkles style={{ width: '13px', height: '13px', color: '#f59e0b' }} />
+              AI Matching
             </span>
           </div>
         </div>
 
-        {/* Live Metrics Grid from PRD V1.5 Section 18 */}
-        <div className="glass-panel" style={{ padding: '28px 32px', marginBottom: '70px', background: 'rgba(14, 18, 28, 0.85)' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', flexWrap: 'wrap', gap: '10px' }}>
-            <div className="eyebrow" style={{ color: '#ff5c35' }}>
-              Live Server Database Ledger (Section 18 & 20)
+        {/* Live Metrics: 2x2 Mobile Compact Grid */}
+        <div className="glass-panel" style={{ padding: '16px', marginBottom: '32px', background: 'rgba(14, 18, 28, 0.85)' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
+            <div className="eyebrow" style={{ color: '#ff5c35', fontSize: '0.65rem' }}>
+              Live Campus Ledger
             </div>
-            <div style={{ fontSize: '0.78rem', color: '#10b981', display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#10b981' }} />
-              Synchronized with <code>/api/db</code>
+            <div style={{ fontSize: '0.7rem', color: '#10b981', display: 'flex', alignItems: 'center', gap: '4px' }}>
+              <span style={{ width: '5px', height: '5px', borderRadius: '50%', background: '#10b981' }} />
+              <span>Synced</span>
             </div>
           </div>
 
-          <div className="grid-cols-4">
-            <div style={{ textAlign: 'center' }}>
-              <div style={{ fontSize: '2.2rem', fontWeight: 800, color: '#f8fafc' }}>{metrics.registeredItemsCount}</div>
-              <div style={{ fontSize: '0.8rem', color: '#94a3b8' }}>Protected Belongings</div>
+          <div className="grid-cols-2-compact">
+            <div style={{ textAlign: 'center', padding: '10px 8px', background: 'rgba(255, 255, 255, 0.03)', borderRadius: '10px' }}>
+              <div style={{ fontSize: '1.6rem', fontWeight: 800, color: '#f8fafc' }}>{metrics.registeredItemsCount}</div>
+              <div style={{ fontSize: '0.7rem', color: '#94a3b8' }}>Protected Items</div>
             </div>
-            <div style={{ textAlign: 'center' }}>
-              <div style={{ fontSize: '2.2rem', fontWeight: 800, color: '#fb7185' }}>{metrics.lostItemsCount}</div>
-              <div style={{ fontSize: '0.8rem', color: '#94a3b8' }}>Active Lost Signals</div>
+            <div style={{ textAlign: 'center', padding: '10px 8px', background: 'rgba(255, 255, 255, 0.03)', borderRadius: '10px' }}>
+              <div style={{ fontSize: '1.6rem', fontWeight: 800, color: '#fb7185' }}>{metrics.lostItemsCount}</div>
+              <div style={{ fontSize: '0.7rem', color: '#94a3b8' }}>Active Lost</div>
             </div>
-            <div style={{ textAlign: 'center' }}>
-              <div style={{ fontSize: '2.2rem', fontWeight: 800, color: '#38bdf8' }}>{metrics.potentialMatchesCount + metrics.verifiedMatchesCount}</div>
-              <div style={{ fontSize: '0.8rem', color: '#94a3b8' }}>Visual Matches Detected</div>
+            <div style={{ textAlign: 'center', padding: '10px 8px', background: 'rgba(255, 255, 255, 0.03)', borderRadius: '10px' }}>
+              <div style={{ fontSize: '1.6rem', fontWeight: 800, color: '#38bdf8' }}>{metrics.potentialMatchesCount + metrics.verifiedMatchesCount}</div>
+              <div style={{ fontSize: '0.7rem', color: '#94a3b8' }}>Visual Matches</div>
             </div>
-            <div style={{ textAlign: 'center' }}>
-              <div style={{ fontSize: '2.2rem', fontWeight: 800, color: '#34d399' }}>{metrics.returnedItemsCount}</div>
-              <div style={{ fontSize: '0.8rem', color: '#94a3b8' }}>Successfully Returned</div>
+            <div style={{ textAlign: 'center', padding: '10px 8px', background: 'rgba(255, 255, 255, 0.03)', borderRadius: '10px' }}>
+              <div style={{ fontSize: '1.6rem', fontWeight: 800, color: '#34d399' }}>{metrics.returnedItemsCount}</div>
+              <div style={{ fontSize: '0.7rem', color: '#94a3b8' }}>Returned</div>
             </div>
           </div>
         </div>
 
         {/* Interactive 6-Stage Core Loop Walkthrough */}
-        <div style={{ marginBottom: '80px' }}>
-          <div style={{ textAlign: 'center', marginBottom: '36px' }}>
-            <div className="eyebrow" style={{ color: '#06b6d4' }}>Interactive Experience</div>
-            <h2 style={{ fontSize: '2.1rem', fontWeight: 800, marginTop: '8px' }}>
-              The 6-Stage Core Recovery Loop
+        <div style={{ marginBottom: '36px' }}>
+          <div style={{ textAlign: 'center', marginBottom: '18px' }}>
+            <div className="eyebrow" style={{ color: '#06b6d4', fontSize: '0.68rem' }}>Interactive Process</div>
+            <h2 style={{ fontSize: '1.35rem', fontWeight: 800, marginTop: '4px' }}>
+              6-Stage Recovery Loop
             </h2>
-            <p style={{ color: '#94a3b8', fontSize: '0.95rem', marginTop: '6px' }}>
-              Click any step to inspect the protocol and test the flow live.
+            <p style={{ color: '#94a3b8', fontSize: '0.78rem', marginTop: '4px' }}>
+              Tap any step to inspect the protocol live.
             </p>
           </div>
 
-          {/* Step Selector Pills */}
+          {/* Horizontal Touch Scroll Step Pills */}
           <div style={{
             display: 'flex',
-            gap: '8px',
+            gap: '6px',
             overflowX: 'auto',
-            paddingBottom: '12px',
-            marginBottom: '24px',
-            justifyContent: 'center'
+            paddingBottom: '8px',
+            marginBottom: '16px',
+            WebkitOverflowScrolling: 'touch'
           }}>
             {loopSteps.map((s, idx) => (
               <button
@@ -253,21 +251,20 @@ export default function HomePage() {
                 style={{
                   display: 'flex',
                   alignItems: 'center',
-                  gap: '8px',
-                  padding: '10px 18px',
+                  gap: '6px',
+                  padding: '7px 12px',
                   borderRadius: '9999px',
                   border: activeStepPreview === idx ? '1px solid #ff5c35' : '1px solid rgba(255,255,255,0.08)',
                   background: activeStepPreview === idx ? 'rgba(255, 92, 53, 0.18)' : 'rgba(255,255,255,0.03)',
                   color: activeStepPreview === idx ? '#fff' : '#94a3b8',
-                  fontSize: '0.84rem',
+                  fontSize: '0.76rem',
                   fontWeight: 700,
                   cursor: 'pointer',
-                  transition: 'all 0.2s cubic-bezier(0.16, 1, 0.3, 1)',
-                  whiteSpace: 'nowrap'
+                  flexShrink: 0
                 }}
               >
                 <span style={{
-                  fontSize: '0.72rem',
+                  fontSize: '0.68rem',
                   color: activeStepPreview === idx ? '#ff8c6b' : '#64748b'
                 }}>{s.step}</span>
                 <span>{s.title}</span>
@@ -275,133 +272,127 @@ export default function HomePage() {
             ))}
           </div>
 
-          {/* Active Step Feature Showcase Card */}
+          {/* Active Step Feature Showcase Card for Mobile */}
           {(() => {
             const current = loopSteps[activeStepPreview];
             return (
               <div className="glass-panel" style={{
-                padding: '36px',
+                padding: '20px 16px',
                 background: 'linear-gradient(135deg, rgba(18, 23, 37, 0.9) 0%, rgba(14, 18, 28, 0.95) 100%)',
                 border: '1px solid rgba(255, 92, 53, 0.3)',
                 boxShadow: 'var(--shadow-coral-glow)',
-                marginBottom: '50px'
+                marginBottom: '28px'
               }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '20px', marginBottom: '20px' }}>
-                  <div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '6px' }}>
-                      <span className="status-pill" style={{ background: 'rgba(255, 92, 53, 0.15)', color: '#ff8c6b', border: '1px solid rgba(255, 92, 53, 0.4)' }}>
-                        Stage {current.step} • {current.actor}
-                      </span>
-                      <span style={{ fontSize: '0.78rem', color: '#94a3b8' }}>{current.badge}</span>
-                    </div>
-                    <h3 style={{ fontSize: '1.8rem', fontWeight: 800, color: '#f8fafc' }}>
-                      {current.title}
-                    </h3>
-                  </div>
-
-                  <Link
-                    href={current.actionLink}
-                    className="btn-primary"
-                    style={{ padding: '10px 22px', fontSize: '0.88rem' }}
-                  >
-                    <span>{current.actionText}</span>
-                    <ArrowRight style={{ width: '15px', height: '15px' }} />
-                  </Link>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px', marginBottom: '10px' }}>
+                  <span className="status-pill" style={{ background: 'rgba(255, 92, 53, 0.15)', color: '#ff8c6b', border: '1px solid rgba(255, 92, 53, 0.4)', fontSize: '0.65rem' }}>
+                    Stage {current.step} • {current.actor}
+                  </span>
+                  <span style={{ fontSize: '0.72rem', color: '#94a3b8' }}>{current.badge}</span>
                 </div>
 
-                <p style={{ color: '#cbd5e1', fontSize: '1.05rem', lineHeight: 1.6, marginBottom: '20px', maxWidth: '780px' }}>
+                <h3 style={{ fontSize: '1.25rem', fontWeight: 800, color: '#f8fafc', marginBottom: '8px' }}>
+                  {current.title}
+                </h3>
+
+                <p style={{ color: '#cbd5e1', fontSize: '0.85rem', lineHeight: 1.5, marginBottom: '16px' }}>
                   {current.desc}
                 </p>
 
                 <div style={{
                   background: 'rgba(255, 255, 255, 0.03)',
                   border: '1px solid rgba(255, 255, 255, 0.08)',
-                  borderRadius: '12px',
-                  padding: '14px 18px',
-                  fontSize: '0.85rem',
+                  borderRadius: '10px',
+                  padding: '10px 12px',
+                  fontSize: '0.75rem',
                   color: '#94a3b8',
                   display: 'flex',
                   alignItems: 'center',
-                  gap: '10px'
+                  gap: '8px',
+                  marginBottom: '16px'
                 }}>
-                  <Sparkles style={{ width: '16px', height: '16px', color: '#ff5c35', flexShrink: 0 }} />
-                  <span><strong>Design Principle:</strong> {current.detail}</span>
+                  <Sparkles style={{ width: '14px', height: '14px', color: '#ff5c35', flexShrink: 0 }} />
+                  <span><strong>Design:</strong> {current.detail}</span>
                 </div>
+
+                <Link
+                  href={current.actionLink}
+                  className="btn-primary"
+                  style={{ width: '100%', padding: '10px 16px', fontSize: '0.82rem' }}
+                >
+                  <span>{current.actionText}</span>
+                  <ArrowRight style={{ width: '14px', height: '14px' }} />
+                </Link>
               </div>
             );
           })()}
         </div>
 
-        {/* Why WhatsApp Groups Fail vs KHOJ */}
-        <div className="glass-panel" style={{ padding: '36px', marginBottom: '60px' }}>
-          <h3 style={{ fontSize: '1.5rem', fontWeight: 800, marginBottom: '24px', textAlign: 'center' }}>
-            Why WhatsApp Groups & Security Desks Fall Short
+        {/* Why WhatsApp Groups Fail vs KHOJ: Stacked Cards */}
+        <div className="glass-panel" style={{ padding: '20px 16px', marginBottom: '32px' }}>
+          <h3 style={{ fontSize: '1.2rem', fontWeight: 800, marginBottom: '16px', textAlign: 'center' }}>
+            Why WhatsApp Groups Fall Short
           </h3>
 
-          <div className="grid-cols-2" style={{ gap: '30px' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
             <div style={{
               background: 'rgba(244, 63, 94, 0.05)',
               border: '1px solid rgba(244, 63, 94, 0.2)',
-              borderRadius: '16px',
-              padding: '24px'
+              borderRadius: '14px',
+              padding: '16px'
             }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#fb7185', fontWeight: 700, marginBottom: '14px' }}>
-                <AlertTriangle style={{ width: '18px', height: '18px' }} />
-                <span>Traditional WhatsApp & Noticeboard</span>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#fb7185', fontWeight: 700, fontSize: '0.88rem', marginBottom: '10px' }}>
+                <AlertTriangle style={{ width: '16px', height: '16px' }} />
+                <span>Traditional WhatsApp Notice</span>
               </div>
-              <ul style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: '10px', fontSize: '0.88rem', color: '#94a3b8' }}>
-                <li>❌ 500+ messages drown out the actual lost report.</li>
-                <li>❌ Photos posted publicly allow dishonest claims.</li>
-                <li>❌ Finder must expose their personal phone number to everyone.</li>
-                <li>❌ Generic items (AirPods, black bottles) look identical to everyone.</li>
-                <li>❌ Items remain unclaimed in security boxes for semesters.</li>
+              <ul style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: '8px', fontSize: '0.78rem', color: '#94a3b8' }}>
+                <li>❌ 500+ daily chats drown out lost item posts</li>
+                <li>❌ Public photos encourage false claims</li>
+                <li>❌ Finder must reveal phone number to everyone</li>
+                <li>❌ Identical items (AirPods, bottles) look the same</li>
               </ul>
             </div>
 
             <div style={{
               background: 'rgba(16, 185, 129, 0.05)',
               border: '1px solid rgba(16, 185, 129, 0.2)',
-              borderRadius: '16px',
-              padding: '24px'
+              borderRadius: '14px',
+              padding: '16px'
             }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#34d399', fontWeight: 700, marginBottom: '14px' }}>
-                <ShieldCheck style={{ width: '18px', height: '18px' }} />
-                <span>KHOJ Campus Solution</span>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#34d399', fontWeight: 700, fontSize: '0.88rem', marginBottom: '10px' }}>
+                <ShieldCheck style={{ width: '16px', height: '16px' }} />
+                <span>KHOJ Campus Protocol</span>
               </div>
-              <ul style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: '10px', fontSize: '0.88rem', color: '#94a3b8' }}>
-                <li>✓ Private pre-registration with secret unique details.</li>
-                <li>✓ Zero login for finders to ensure effortless reporting.</li>
-                <li>✓ Blind verification prevents false ownership claims.</li>
-                <li>✓ Automated weighted matching prioritizes lost items.</li>
-                <li>✓ Dual confirmation closes cases without payment hurdles.</li>
+              <ul style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: '8px', fontSize: '0.78rem', color: '#94a3b8' }}>
+                <li>✓ Private pre-registration with secret unique details</li>
+                <li>✓ Zero login for finders to ensure effortless reporting</li>
+                <li>✓ Blind verification prevents imposter claims</li>
+                <li>✓ Automated matching and daylight safe handovers</li>
               </ul>
             </div>
           </div>
         </div>
 
-        {/* Quick Demo Simulator CTA Box */}
+        {/* Demo Quick CTA Box */}
         <div style={{
           textAlign: 'center',
-          padding: '44px 32px',
+          padding: '24px 16px',
           background: 'linear-gradient(135deg, rgba(255, 92, 53, 0.12) 0%, rgba(6, 182, 212, 0.12) 100%)',
           border: '1px solid rgba(255, 92, 53, 0.35)',
-          borderRadius: '24px'
+          borderRadius: '20px',
+          marginBottom: '20px'
         }}>
-          <h3 style={{ fontSize: '1.8rem', fontWeight: 800, marginBottom: '10px' }}>
-            Ready to explore KHOJ Campus in action?
+          <h3 style={{ fontSize: '1.25rem', fontWeight: 800, marginBottom: '8px' }}>
+            Ready to explore KHOJ?
           </h3>
-          <p style={{ color: '#94a3b8', maxWidth: '600px', margin: '0 auto 26px auto', fontSize: '0.95rem' }}>
-            Test the student dashboard, submit a live found item report without an account, check the blind verification flow, or inspect the admin desk.
+          <p style={{ color: '#94a3b8', margin: '0 auto 18px auto', fontSize: '0.8rem', lineHeight: 1.5 }}>
+            Test the student dashboard, submit a live report with zero login, or inspect the matching lab.
           </p>
-          <div style={{ display: 'flex', justifyContent: 'center', gap: '16px', flexWrap: 'wrap' }}>
-            <Link href="/dashboard" className="btn-primary">
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+            <Link href="/dashboard" className="btn-primary" style={{ width: '100%', padding: '12px', fontSize: '0.88rem' }}>
               Open Student Portal
             </Link>
-            <Link href="/found" className="btn-secondary">
+            <Link href="/found" className="btn-secondary" style={{ width: '100%', padding: '12px', fontSize: '0.88rem' }}>
               Test Finder Flow
-            </Link>
-            <Link href="/admin" className="btn-secondary">
-              Open Admin Desk
             </Link>
           </div>
         </div>

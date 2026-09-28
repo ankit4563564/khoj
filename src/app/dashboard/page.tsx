@@ -112,26 +112,26 @@ export default function DashboardPage() {
   };
 
   return (
-    <div style={{ padding: '36px 0' }}>
+    <div style={{ padding: '16px 0' }}>
       <div className="container">
         
         {/* Header Bar */}
-        <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'center', gap: '16px', marginBottom: '32px' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '14px', marginBottom: '24px' }}>
           <div>
-            <div className="eyebrow" style={{ color: '#ff5c35' }}>KHOJ V1.5 Student Desk</div>
-            <h1 style={{ fontSize: '2.3rem', fontWeight: 900, marginTop: '4px' }}>My Protected Belongings</h1>
-            <p style={{ color: '#94a3b8', fontSize: '0.88rem' }}>
-              Logged in as <strong style={{ color: '#f8fafc' }}>{currentUserEmail}</strong> • Official College Domain
+            <div className="eyebrow" style={{ color: '#ff5c35', fontSize: '0.68rem' }}>KHOJ Student Desk</div>
+            <h1 style={{ fontSize: '1.65rem', fontWeight: 900, marginTop: '4px' }}>My Belongings</h1>
+            <p style={{ color: '#94a3b8', fontSize: '0.8rem' }}>
+              <strong style={{ color: '#f8fafc' }}>{currentUserEmail}</strong>
             </p>
           </div>
 
           <button 
             onClick={() => setShowAddModal(true)} 
             className="btn-primary"
-            style={{ padding: '12px 26px', fontSize: '0.95rem' }}
+            style={{ width: '100%', padding: '12px 18px', fontSize: '0.88rem' }}
           >
-            <Plus style={{ width: '18px', height: '18px' }} />
-            <span>+ Protect New Belonging (&lt; 1 min)</span>
+            <Plus style={{ width: '16px', height: '16px' }} />
+            <span>+ Protect New Belonging</span>
           </button>
         </div>
 
@@ -427,19 +427,20 @@ export default function DashboardPage() {
             padding: '20px'
           }}>
             <div className="glass-panel" style={{
-              maxWidth: '640px',
+              maxWidth: '430px',
               width: '100%',
-              maxHeight: '90vh',
+              maxHeight: '88vh',
               overflowY: 'auto',
-              padding: '32px',
+              padding: '20px 16px',
               background: '#0d111a',
               border: '1px solid rgba(255, 92, 53, 0.35)',
-              boxShadow: 'var(--shadow-coral-glow)'
+              boxShadow: 'var(--shadow-coral-glow)',
+              borderRadius: '24px'
             }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
                 <div>
-                  <div className="eyebrow" style={{ color: '#ff5c35' }}>Fast Registration (&lt; 1 min)</div>
-                  <h2 style={{ fontSize: '1.6rem', fontWeight: 800 }}>Protect a Physical Belonging</h2>
+                  <div className="eyebrow" style={{ color: '#ff5c35', fontSize: '0.65rem' }}>Fast Registration (&lt; 1 min)</div>
+                  <h2 style={{ fontSize: '1.35rem', fontWeight: 800 }}>Protect a Belonging</h2>
                 </div>
                 <button 
                   onClick={() => setShowAddModal(false)}
@@ -659,11 +660,12 @@ export default function DashboardPage() {
             padding: '20px'
           }}>
             <div className="glass-panel" style={{
-              maxWidth: '520px',
+              maxWidth: '430px',
               width: '100%',
-              padding: '30px',
+              padding: '20px 16px',
               background: '#0d111a',
-              border: '1px solid rgba(244, 63, 94, 0.45)'
+              border: '1px solid rgba(244, 63, 94, 0.45)',
+              borderRadius: '24px'
             }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '18px' }}>
                 <div>
