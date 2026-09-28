@@ -3,17 +3,17 @@ import {
   HttpError,
   originCheck,
   rateLimit,
-  requireUser,
   text,
 } from "@/lib/rvu/auth";
+import { finderActor } from "@/lib/rvu/guest";
 import { one } from "@/lib/rvu/db";
 import { categories } from "@/lib/rvu/types";
 export const runtime = "nodejs";
 export async function POST(req: Request) {
   try {
     originCheck(req);
-    const user = await requireUser();
-    rateLimit(`vision:${user.id}`, 10, 3600);
+    const userId = await finderActor(req);
+    rateLimit(`vision:${userId}`, 10, 3600);
     if (!process.env.GEMINI_API_KEY)
       throw new HttpError(
         503,
@@ -23,7 +23,7 @@ export async function POST(req: Request) {
     const photo = one<{ mime: string; content: Uint8Array }>(
       "SELECT mime,content FROM uploads WHERE id=? AND userId=?",
       text(imageId, "Photo ID"),
-      user.id,
+      userId,
     );
     if (!photo) throw new HttpError(404, "Upload your photo first.");
     const response = await fetch(
