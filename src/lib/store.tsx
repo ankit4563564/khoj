@@ -41,6 +41,7 @@ interface KhojContextType {
     photos: string[];
   }) => Promise<void>;
   markItemAsLost: (itemId: string, location: string, lost_at: string, notes?: string) => Promise<void>;
+  markItemAsSafe: (itemId: string) => Promise<void>;
   submitFoundReport: (report: {
     image_url: string;
     detail_image_url?: string;
@@ -146,6 +147,22 @@ export function KhojProvider({ children }: { children: React.ReactNode }) {
         body: JSON.stringify({
           action: 'mark_lost',
           payload: { itemId, location, lost_at, notes },
+        }),
+      });
+      await refreshDb();
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const markItemAsSafe = async (itemId: string) => {
+    try {
+      await fetch('/api/db', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'mark_safe',
+          payload: { itemId },
         }),
       });
       await refreshDb();
@@ -262,6 +279,7 @@ export function KhojProvider({ children }: { children: React.ReactNode }) {
         refreshDb,
         registerNewItem,
         markItemAsLost,
+        markItemAsSafe,
         submitFoundReport,
         verifyOwnershipAttempt,
         confirmHandover,

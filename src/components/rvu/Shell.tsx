@@ -1,0 +1,206 @@
+"use client";
+import Link from "next/link";
+import { usePathname, useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
+import {
+  Bell,
+  Menu,
+  X,
+  Radar,
+  ArrowUpRight,
+  Moon,
+  Sun,
+  Monitor,
+  LogOut,
+} from "lucide-react";
+import { PortalProvider, usePortal } from "./PortalProvider";
+
+export function Mark({ large = false }: { large?: boolean }) {
+  return (
+    <span className={`rv-mark ${large ? "large" : ""}`}>
+      <Radar size={large ? 44 : 25} strokeWidth={1.5} />
+    </span>
+  );
+}
+function Navigation() {
+  const { data, act, toast } = usePortal(),
+    path = usePathname(),
+    router = useRouter();
+  const [open, setOpen] = useState(false),
+    [notices, setNotices] = useState(false),
+    [theme, setTheme] = useState("light");
+  useEffect(() => {
+    setOpen(false);
+    setNotices(false);
+  }, [path]);
+  useEffect(() => {
+    setTheme(localStorage.getItem("rvu-theme") || "light");
+  }, []);
+  useEffect(() => {
+    const media = window.matchMedia("(prefers-color-scheme: dark)");
+    const apply = () => {
+      document.documentElement.dataset.theme =
+        theme === "system" ? (media.matches ? "dark" : "light") : theme;
+    };
+    apply();
+    localStorage.setItem("rvu-theme", theme);
+    media.addEventListener("change", apply);
+    return () => media.removeEventListener("change", apply);
+  }, [theme]);
+  const links = [
+    ["/dashboard", "Home"],
+    ["/board", "Campus Board"],
+    ["/report/lost", "I Lost Something"],
+    ["/report/found", "I Found Something"],
+    ["/status", "My Reports"],
+    ...(data.user?.role === "staff" ? [["/hod", "Staff Desk"]] : []),
+  ];
+  return (
+    <>
+      <header className="rv-nav">
+        <Link
+          href={data.user ? "/dashboard" : "/about"}
+          className="rv-brand"
+          aria-label="KHOJ RV University home"
+        >
+          <Mark />
+          <span>
+            KHOJ<span className="rv-brand-sub">RV UNIVERSITY</span>
+          </span>
+        </Link>
+        <button
+          className="rv-mobile-toggle rv-icon-button"
+          onClick={() => setOpen(!open)}
+          aria-expanded={open}
+          aria-label="Toggle navigation"
+        >
+          {open ? <X /> : <Menu />}
+        </button>
+        <nav aria-label="Main navigation" className={open ? "is-open" : ""}>
+          {links.map(([href, label]) => (
+            <Link
+              key={href}
+              className={path === href ? "active" : ""}
+              href={href}
+            >
+              {label}
+            </Link>
+          ))}
+          {data.user ? (
+            <>
+              <Link href="/profile" className={path === "/profile" ? "active" : ""}>Profile</Link>
+              <div className="rv-notification-wrap">
+                <button
+                  className="rv-icon-button"
+                  aria-label="Notifications"
+                  aria-expanded={notices}
+                  onClick={() => setNotices(!notices)}
+                >
+                  <Bell size={19} />
+                  {data.notifications.some((n) => !n.read) && (
+                    <span className="rv-dot" />
+                  )}
+                </button>
+                {notices && (
+                  <div className="rv-notifications">
+                    <div className="rv-between">
+                      <strong>Notifications</strong>
+                      <button
+                        className="rv-text-button"
+                        onClick={() =>
+                          void act("read_notifications").catch((e) =>
+                            toast(e.message),
+                          )
+                        }
+                      >
+                        Mark all read
+                      </button>
+                    </div>
+                    {data.notifications.length ? (
+                      data.notifications.slice(0, 8).map((n) => (
+                        <Link
+                          key={n.id}
+                          href={n.href}
+                          className={n.read ? "" : "unread"}
+                        >
+                          {n.title}
+                          <small>
+                            {new Date(n.createdAt).toLocaleDateString()}
+                          </small>
+                        </Link>
+                      ))
+                    ) : (
+                      <p>You’re all caught up.</p>
+                    )}
+                  </div>
+                )}
+              </div>
+              <button
+                className="rv-account"
+                title="Log out"
+                onClick={async () => {
+                  try {
+                    await act("logout");
+                    router.push("/login");
+                  } catch (e) {
+                    toast((e as Error).message);
+                  }
+                }}
+              >
+                <span>{data.user.name.split(" ")[0]}</span>
+                <LogOut size={15} />
+              </button>
+            </>
+          ) : (
+            <>
+              <Link href="/login" className={path === "/login" ? "active" : ""}>
+                Log In
+              </Link>
+              <Link href="/signup" className="rv-nav-signup">
+                Sign Up <ArrowUpRight size={13} />
+              </Link>
+            </>
+          )}
+        </nav>
+      </header>
+      <label className="rv-theme">
+        {theme === "dark" ? (
+          <Moon size={14} />
+        ) : theme === "light" ? (
+          <Sun size={14} />
+        ) : (
+          <Monitor size={14} />
+        )}
+        <span className="sr-only">Theme</span>
+        <select
+          aria-label="Theme"
+          value={theme}
+          onChange={(e) => setTheme(e.target.value)}
+        >
+          <option value="system">Theme: System</option>
+          <option value="light">Theme: Light</option>
+          <option value="dark">Theme: Dark</option>
+        </select>
+      </label>
+    </>
+  );
+}
+export default function Shell({ children }: { children: React.ReactNode }) {
+  return (
+    <PortalProvider>
+      <div className="rv-app">
+        <Navigation />
+        <main id="main-content" className="rv-main">
+          {children}
+        </main>
+        <footer className="rv-footer">
+          <Link href="/about">
+            <strong>KHOJ</strong> <span> / RV University</span>
+          </Link>
+          <span>A little care. A lot of reunions.</span>
+          <span>Student-built · Not an official university service</span>
+        </footer>
+      </div>
+    </PortalProvider>
+  );
+}

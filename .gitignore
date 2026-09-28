@@ -31,3 +31,9 @@ yarn-error.log*
 
 # typescript
 *.tsbuildinfo
+
+/.local-backup/
+/data/*.sqlite*
+/.test-data/
+.env
+

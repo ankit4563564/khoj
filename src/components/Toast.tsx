@@ -1,7 +1,7 @@
 'use client';
 
 import React, { createContext, useContext, useState, useCallback } from 'react';
-import { CheckCircle2, AlertCircle, Info, Sparkles, X } from 'lucide-react';
+import { CheckCircle2, AlertCircle, Info, X } from 'lucide-react';
 
 export interface ToastMessage {
   id: string;
@@ -43,7 +43,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
 
     setTimeout(() => {
       setToasts(prev => prev.filter(t => t.id !== id));
-    }, 4500);
+    }, 4000);
   }, []);
 
   const removeToast = (id: string) => {
@@ -56,14 +56,14 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
       {/* Toast Render Container */}
       <div style={{
         position: 'fixed',
-        bottom: '24px',
-        right: '24px',
+        bottom: '20px',
+        right: '20px',
         zIndex: 9999,
         display: 'flex',
         flexDirection: 'column',
-        gap: '10px',
+        gap: '8px',
         pointerEvents: 'none',
-        maxWidth: '400px',
+        maxWidth: '360px',
         width: '100%',
       }}>
         {toasts.map(toast => {
@@ -79,43 +79,29 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
                 pointerEvents: 'auto',
                 display: 'flex',
                 alignItems: 'flex-start',
-                gap: '12px',
-                padding: '14px 18px',
-                borderRadius: '14px',
-                background: 'rgba(14, 18, 28, 0.95)',
-                backdropFilter: 'blur(16px)',
-                WebkitBackdropFilter: 'blur(16px)',
-                border: isMatch 
-                  ? '1px solid rgba(245, 158, 11, 0.5)' 
-                  : isSuccess 
-                  ? '1px solid rgba(16, 185, 129, 0.4)' 
-                  : (isWarning || isError)
-                  ? '1px solid rgba(244, 63, 94, 0.5)' 
-                  : '1px solid rgba(99, 102, 241, 0.4)',
-                boxShadow: isMatch 
-                  ? '0 10px 30px rgba(245, 158, 11, 0.25)' 
-                  : isSuccess
-                  ? '0 10px 30px rgba(16, 185, 129, 0.2)'
-                  : isError
-                  ? '0 10px 30px rgba(244, 63, 94, 0.25)'
-                  : '0 10px 30px rgba(0, 0, 0, 0.6)',
-                animation: 'slide-in-right 0.3s cubic-bezier(0.16, 1, 0.3, 1)',
-                color: '#f8fafc',
+                gap: '10px',
+                padding: '12px 14px',
+                borderRadius: 'var(--radius-md)',
+                background: '#FFFFFF',
+                border: '1px solid var(--border-subtle)',
+                boxShadow: '0 4px 12px rgba(0, 0, 0, 0.08)',
+                color: 'var(--text-primary)',
+                animation: 'slideUp 160ms ease-out',
               }}
             >
-              <div style={{ marginTop: '2px' }}>
-                {isMatch && <Sparkles style={{ width: '18px', height: '18px', color: '#f59e0b' }} />}
-                {isSuccess && <CheckCircle2 style={{ width: '18px', height: '18px', color: '#34d399' }} />}
-                {(isWarning || isError) && <AlertCircle style={{ width: '18px', height: '18px', color: '#fb7185' }} />}
-                {!isMatch && !isSuccess && !isWarning && !isError && <Info style={{ width: '18px', height: '18px', color: '#818cf8' }} />}
+              <div style={{ marginTop: '2px', flexShrink: 0 }}>
+                {isSuccess && <CheckCircle2 size={16} style={{ color: '#059669' }} />}
+                {isMatch && <Info size={16} style={{ color: '#D97706' }} />}
+                {(isWarning || isError) && <AlertCircle size={16} style={{ color: '#DC2626' }} />}
+                {!isSuccess && !isMatch && !isWarning && !isError && <Info size={16} style={{ color: '#0F172A' }} />}
               </div>
 
               <div style={{ flex: 1 }}>
-                <div style={{ fontSize: '0.88rem', fontWeight: 700, color: '#f8fafc' }}>
+                <div style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-primary)' }}>
                   {toast.title}
                 </div>
                 {toast.message && (
-                  <div style={{ fontSize: '0.8rem', color: '#94a3b8', marginTop: '2px', lineHeight: 1.4 }}>
+                  <div style={{ fontSize: '12px', color: 'var(--text-secondary)', marginTop: '2px', lineHeight: 1.4 }}>
                     {toast.message}
                   </div>
                 )}
@@ -126,14 +112,15 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
                 style={{
                   background: 'none',
                   border: 'none',
-                  color: '#64748b',
+                  color: 'var(--text-muted)',
                   cursor: 'pointer',
                   padding: '2px',
                   display: 'flex',
                   alignItems: 'center',
                 }}
+                aria-label="Close notification"
               >
-                <X style={{ width: '15px', height: '15px' }} />
+                <X size={14} />
               </button>
             </div>
           );
