@@ -47,7 +47,12 @@ export async function GET(req: Request) {
       if (error || !data?.url) {
         return errorRedirect(error?.message || "Could not initialize Google sign-in with Supabase.");
       }
-      return NextResponse.redirect(data.url);
+      const cookieStore = await cookies();
+      const response = NextResponse.redirect(data.url);
+      cookieStore.getAll().forEach((c) => {
+        response.cookies.set(c.name, c.value);
+      });
+      return response;
     } catch (e) {
       console.error("Supabase OAuth start failed:", e);
       return errorRedirect("Could not connect to Supabase authentication.");

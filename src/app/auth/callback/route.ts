@@ -1,11 +1,11 @@
-import { NextResponse } from "next/server";
-import { createClient } from "@/lib/supabase/server";
+import { NextResponse, type NextRequest } from "next/server";
+import { createServerClient } from "@supabase/ssr";
 import { createSession, domains, emailAllowed } from "@/lib/rvu/auth";
 import { id, now, one, run } from "@/lib/rvu/db";
 
 export const dynamic = "force-dynamic";
 
-export async function GET(request: Request) {
+export async function GET(request: NextRequest) {
   const { searchParams, origin } = new URL(request.url);
   const code = searchParams.get("code");
   const next = searchParams.get("next") ?? "/dashboard";
@@ -18,10 +18,30 @@ export async function GET(request: Request) {
   }
 
   try {
-    const supabase = await createClient();
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+    const supabaseKey =
+      process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ||
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
+
+    let response = NextResponse.next();
+
+    const supabase = createServerClient(supabaseUrl, supabaseKey, {
+      cookies: {
+        getAll() {
+          return request.cookies.getAll();
+        },
+        setAll(cookiesToSet) {
+          cookiesToSet.forEach(({ name, value, options }) => {
+            request.cookies.set(name, value);
+            response.cookies.set(name, value, options);
+          });
+        },
+      },
+    });
+
     const { data, error } = await supabase.auth.exchangeCodeForSession(code);
 
-    if (error || !data.user) {
+    if (error || !data?.user) {
       return errorRedirect(error?.message || "Failed to exchange authorization code.");
     }
 
@@ -79,7 +99,14 @@ export async function GET(request: Request) {
     await createSession(user.id);
 
     const destination = user.role === "staff" ? "/hod" : next;
-    return NextResponse.redirect(`${origin}${destination}`);
+    const redirectResponse = NextResponse.redirect(`${origin}${destination}`);
+
+    // Ensure all cookies set during the exchange are copied over to the redirect response
+    response.cookies.getAll().forEach((c) => {
+      redirectResponse.cookies.set(c.name, c.value);
+    });
+
+    return redirectResponse;
   } catch (err) {
     console.error("Auth callback error:", err);
     return errorRedirect("Authentication error occurred. Please try again.");

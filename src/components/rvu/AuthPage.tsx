@@ -52,6 +52,33 @@ export default function AuthPage({
       setBusy(false);
     }
   }
+  async function onGoogleClick(e: React.MouseEvent) {
+    if (
+      process.env.NEXT_PUBLIC_SUPABASE_URL &&
+      (process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ||
+        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY)
+    ) {
+      e.preventDefault();
+      try {
+        const { createClient } = await import("@/lib/supabase/client");
+        const supabase = createClient();
+        const { error: oauthError } = await supabase.auth.signInWithOAuth({
+          provider: "google",
+          options: {
+            redirectTo: `${window.location.origin}/auth/callback`,
+            queryParams: {
+              prompt: "select_account",
+              hd: "rvu.edu.in",
+            },
+          },
+        });
+        if (oauthError) setError(oauthError.message);
+      } catch (err) {
+        console.error(err);
+        window.location.href = "/api/rvu/google";
+      }
+    }
+  }
   return (
     <div className="rv-auth-page">
       <div className="rv-auth-top">
@@ -229,7 +256,11 @@ export default function AuthPage({
                   <span>OR</span>
                 </div>
                 {data.config.google ? (
-                  <a className="rv-button rv-google" href="/api/rvu/google">
+                  <a
+                    className="rv-button rv-google"
+                    href="/api/rvu/google"
+                    onClick={onGoogleClick}
+                  >
                     <span className="rv-google-g">G</span>Continue with Google
                   </a>
                 ) : (
