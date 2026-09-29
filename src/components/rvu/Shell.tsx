@@ -12,6 +12,11 @@ import {
   Sun,
   Monitor,
   LogOut,
+  Home,
+  LayoutGrid,
+  Plus,
+  FileText,
+  User,
 } from "lucide-react";
 import { PortalProvider, usePortal } from "./PortalProvider";
 
@@ -48,24 +53,24 @@ function Navigation() {
     return () => media.removeEventListener("change", apply);
   }, [theme]);
   const links = [
-    ["/dashboard", "Home"],
-    ["/board", "Campus Board"],
-    ["/report/lost", "Lost Item"],
-    ["/report/found", "Found Something"],
-    ["/status", "Status & Matches"],
+    ["/", "Home"],
+    ["/board", "Browse Items"],
+    ["/report/lost", "Report Lost"],
+    ["/report/found", "Report Found"],
+    ["/status", "My Reports"],
     ...(data.user?.role === "staff" ? [["/hod", "Staff Desk"]] : []),
   ];
   return (
     <>
       <header className="rv-nav">
         <Link
-          href={data.user ? "/dashboard" : "/"}
+          href="/"
           className="rv-brand"
           aria-label="KHOJ RV University home"
         >
           <Mark />
           <span>
-            KHOJ<span className="rv-brand-sub"><span className="kh-pulse-dot" style={{ width: 5, height: 5, marginRight: 5, verticalAlign: 'middle' }} />RV UNIVERSITY NODE</span>
+            KHOJ<span className="rv-brand-sub"><span className="kh-pulse-dot" style={{ width: 5, height: 5, marginRight: 5, verticalAlign: 'middle' }} />RV UNIVERSITY</span>
           </span>
         </Link>
         <button
@@ -185,6 +190,45 @@ function Navigation() {
     </>
   );
 }
+
+function MobileBottomNav() {
+  const path = usePathname();
+  const { data } = usePortal();
+
+  return (
+    <nav className="kh-bottom-nav" aria-label="Mobile Navigation">
+      <Link href="/" className={`kh-bottom-item ${path === "/" ? "active" : ""}`}>
+        <Home size={20} />
+        <span>Home</span>
+      </Link>
+      <Link href="/board" className={`kh-bottom-item ${path === "/board" ? "active" : ""}`}>
+        <LayoutGrid size={20} />
+        <span>Browse</span>
+      </Link>
+      <Link
+        href="/report/found"
+        className={`kh-bottom-item kh-bottom-report ${path.startsWith("/report") ? "active" : ""}`}
+      >
+        <div className="kh-bottom-plus-circle">
+          <Plus size={22} strokeWidth={2.5} />
+        </div>
+        <span>Report</span>
+      </Link>
+      <Link href="/status" className={`kh-bottom-item ${path === "/status" ? "active" : ""}`}>
+        <FileText size={20} />
+        <span>My Items</span>
+      </Link>
+      <Link
+        href={data.user ? "/profile" : "/login"}
+        className={`kh-bottom-item ${path === "/profile" || path === "/login" ? "active" : ""}`}
+      >
+        <User size={20} />
+        <span>{data.user ? "Profile" : "Sign In"}</span>
+      </Link>
+    </nav>
+  );
+}
+
 export default function Shell({ children }: { children: React.ReactNode }) {
   return (
     <PortalProvider>
@@ -194,12 +238,13 @@ export default function Shell({ children }: { children: React.ReactNode }) {
           {children}
         </main>
         <footer className="rv-footer">
-          <Link href="/about">
+          <Link href="/">
             <strong>KHOJ</strong> <span> / RV University</span>
           </Link>
           <span>A little care. A lot of reunions.</span>
-          <span>Student-built · Not an official university service</span>
+          <span>RV University Campus Lost & Found</span>
         </footer>
+        <MobileBottomNav />
       </div>
     </PortalProvider>
   );
