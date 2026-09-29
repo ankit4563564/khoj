@@ -14,7 +14,8 @@
     "test:owner-fingerprint": "npx tsx tests/owner-fingerprint.test.mjs",
     "test:found-fingerprint": "npx tsx tests/found-fingerprint.test.mjs",
     "test:matching-engine": "npx tsx tests/matching-engine.test.mjs",
-    "test:embeddings-engine": "npx tsx tests/embeddings-engine.test.mjs"
+    "test:embeddings-engine": "npx tsx tests/embeddings-engine.test.mjs",
+    "benchmark:retrieval": "npx tsx tests/retrieval-benchmark.test.mts"
   },
   "dependencies": {
     "@supabase/ssr": "^0.12.7",
