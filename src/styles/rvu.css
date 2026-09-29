@@ -3318,4 +3318,116 @@ small {
   color: #ffffff;
 }
 
+/* AI Detection Status Banners */
+.kh-ai-status-banner {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(99, 102, 241, 0.12);
+  border: 1px solid rgba(99, 102, 241, 0.3);
+  color: #818cf8;
+  padding: 10px 14px;
+  border-radius: 10px;
+  font-size: 0.84rem;
+  font-weight: 600;
+  margin-top: 10px;
+}
+
+.kh-ai-success-banner {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: rgba(16, 185, 129, 0.12);
+  border: 1px solid rgba(16, 185, 129, 0.35);
+  color: #34d399;
+  padding: 12px 14px;
+  border-radius: 12px;
+  font-size: 0.88rem;
+  margin-top: 10px;
+}
+
+.kh-sparkle-icon {
+  color: #34d399;
+  flex-shrink: 0;
+}
+
+.kh-ai-badge {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  background: rgba(16, 185, 129, 0.25);
+  color: #34d399;
+  padding: 2px 7px;
+  border-radius: 6px;
+  margin-left: 6px;
+}
+
+/* Custody Chips */
+.kh-custody-chips {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.kh-custody-chip {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 14px;
+  border-radius: 10px;
+  border: 1px solid var(--rv-line);
+  background: var(--rv-soft);
+  color: var(--rv-muted);
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  text-align: left;
+  transition: all 0.15s ease;
+}
+
+.kh-custody-chip.selected {
+  border-color: #10b981;
+  background: rgba(16, 185, 129, 0.12);
+  color: #34d399;
+}
+
+/* Category Pill Selector */
+.kh-pill-selector {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+}
+
+.kh-selector-pill {
+  padding: 7px 13px;
+  border-radius: 999px;
+  border: 1px solid var(--rv-line);
+  background: var(--rv-soft);
+  color: var(--rv-muted);
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.kh-selector-pill.selected {
+  background: var(--rv-blue);
+  color: #ffffff;
+  border-color: var(--rv-blue);
+  box-shadow: 0 2px 8px rgba(99, 102, 241, 0.35);
+}
+
+.kh-photo-picker.small {
+  padding: 12px;
+}
+
+.kh-photo-placeholder.small {
+  flex-direction: row;
+  justify-content: center;
+  gap: 8px;
+  font-size: 0.82rem;
+  color: var(--rv-muted);
+}
+
+
 

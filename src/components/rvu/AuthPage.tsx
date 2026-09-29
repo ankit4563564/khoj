@@ -44,7 +44,7 @@ export default function AuthPage({
         setMessage(result.message || "Check your email.");
         setDevLink(result.developmentLink || "");
       } else {
-        router.push(role === "staff" ? "/hod" : "/dashboard");
+        router.push("/dashboard");
       }
     } catch (e) {
       setError((e as Error).message);
@@ -215,26 +215,6 @@ export default function AuthPage({
           </div>
         ) : (
           <form onSubmit={submit}>
-            {mode === "login" && (
-              <div className="rv-segment" aria-label="Account role">
-                <button
-                  type="button"
-                  aria-pressed={role === "student"}
-                  className={role === "student" ? "selected" : ""}
-                  onClick={() => setRole("student")}
-                >
-                  Student Login
-                </button>
-                <button
-                  type="button"
-                  aria-pressed={role === "staff"}
-                  className={role === "staff" ? "selected" : ""}
-                  onClick={() => setRole("staff")}
-                >
-                  Staff Login
-                </button>
-              </div>
-            )}
             {["login", "signup", "forgot"].includes(mode) && (
               <label className="rv-field">
                 UNIVERSITY EMAIL ADDRESS

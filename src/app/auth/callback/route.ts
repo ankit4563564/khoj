@@ -137,7 +137,7 @@ export async function GET(request: NextRequest) {
 
     const sessionToken = await createSession(user.id);
 
-    const destination = user.role === "staff" ? "/hod" : next;
+    const destination = next;
     const redirectResponse = NextResponse.redirect(`${siteBase}${destination}`);
 
     // Set rvu_session cookie directly on the redirect response
