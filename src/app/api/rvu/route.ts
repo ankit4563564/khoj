@@ -388,6 +388,13 @@ export async function POST(req: Request) {
             finderNotes: record.description,
             actorUserId: user.id,
           });
+          // Phase 5: Generate vector embedding for found report
+          try {
+            const { generateFoundReportEmbedding } = await import("@/lib/rvu/embeddings");
+            await generateFoundReportEmbedding(record.id);
+          } catch (embErr) {
+            console.warn("Found report embedding warning:", embErr);
+          }
           const { matchFoundItem } = await import("@/lib/rvu/matching");
           await matchFoundItem(record.id);
         } catch (fpErr) {

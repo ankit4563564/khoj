@@ -181,12 +181,25 @@ export async function matchFoundItem(
 
   // 6. Persist Candidate Matches to database
   for (const sc of scorecards) {
+    let vectorSim: number | null = null;
+    try {
+      const { getEmbedding } = await import("@/lib/rvu/embeddings/embeddingRepository");
+      const { computeCosineSimilarity } = await import("@/lib/rvu/embeddings/vectorSearch");
+      const itemEmb = await getEmbedding(sc.itemId);
+      const foundEmb = await getEmbedding(sc.foundReportId);
+      if (itemEmb?.embedding && foundEmb?.embedding) {
+        vectorSim = computeCosineSimilarity(itemEmb.embedding, foundEmb.embedding);
+      }
+    } catch {
+      // Embedding retrieval optional
+    }
+
     try {
       await createCandidateMatch(
         {
           foundReportId: sc.foundReportId,
           itemId: sc.itemId,
-          vectorSimilarity: null,
+          vectorSimilarity: vectorSim,
           attributeScore: Math.round(sc.components.genericAttributeCompatibility * 100),
           uniqueClueScore: Math.round(sc.components.distinctiveFeatureSimilarity * 100),
           locationScore: Math.round(sc.components.locationTimeCompatibility * 100),

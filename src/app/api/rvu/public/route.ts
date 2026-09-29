@@ -50,6 +50,13 @@ export async function POST(req:Request){try{
       finderNotes: r.description,
       actorUserId: actor,
     });
+    // Phase 5: Generate vector embedding for found report
+    try {
+      const { generateFoundReportEmbedding } = await import('@/lib/rvu/embeddings');
+      await generateFoundReportEmbedding(r.id);
+    } catch (embErr) {
+      console.warn('Found report embedding warning:', embErr);
+    }
     // Phase 4: Baseline candidate matching engine (generates and stores candidate scorecards, no auto-verification)
     const { matchFoundItem } = await import('@/lib/rvu/matching');
     await matchFoundItem(r.id);

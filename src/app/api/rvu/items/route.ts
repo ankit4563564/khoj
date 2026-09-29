@@ -44,8 +44,11 @@ export async function POST(req:Request){try{
         imageIds,
         actorUserId: user.id,
       });
+      // Phase 5: Asynchronously generate and persist vector embedding
+      const { generateOwnerItemEmbedding } = await import('@/lib/rvu/embeddings');
+      await generateOwnerItemEmbedding(itemId);
     } catch (fpErr) {
-      console.warn('Owner fingerprint extraction background error:', fpErr);
+      console.warn('Owner fingerprint and embedding background warning:', fpErr);
     }
 
     return json({ok:true,id:itemId});
