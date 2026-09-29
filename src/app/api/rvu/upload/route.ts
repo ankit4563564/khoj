@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { HttpError, originCheck, rateLimit, requireUser } from "@/lib/rvu/auth";
 import { id, now, run } from "@/lib/rvu/db";
 import { finderActor } from '@/lib/rvu/guest';
+import { createAdminClient } from '@/lib/supabase/admin';
 export const runtime = "nodejs";
 export async function POST(req: Request) {
   try {
@@ -36,6 +37,27 @@ export async function POST(req: Request) {
       bytes,
       now(),
     );
+
+    // Durable object storage in Supabase Storage if configured
+    try {
+      const supabase = createAdminClient();
+      if (supabase) {
+        const ext = mime === "image/png" ? "png" : mime === "image/webp" ? "webp" : "jpg";
+        const storagePath = `${user.id}/${imageId}.${ext}`;
+        const { error: storageErr } = await supabase.storage
+          .from("khoj-photos")
+          .upload(storagePath, bytes, {
+            contentType: mime,
+            upsert: true,
+          });
+        if (storageErr) {
+          console.warn("Supabase storage upload warning:", storageErr.message);
+        }
+      }
+    } catch (storageErr) {
+      console.warn("Supabase storage upload error:", storageErr);
+    }
+
     return NextResponse.json({ id: imageId });
   } catch (error) {
     return NextResponse.json(

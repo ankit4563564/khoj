@@ -30,7 +30,13 @@ export function db(): Database {
   let file = process.env.RVU_DB_PATH;
   if (!file) {
     if (isServerless) {
-      file = path.join("/tmp", "rvu.sqlite");
+      if (process.env.ALLOW_EPHEMERAL_SQLITE === "true") {
+        file = path.join("/tmp", "rvu.sqlite");
+      } else {
+        throw new Error(
+          "CRITICAL PRODUCTION CONFIGURATION ERROR: Ephemeral SQLite fallback (/tmp/rvu.sqlite) is prohibited in serverless/production. For production college-wide deployment, configure Supabase or provide a persistent database."
+        );
+      }
     } else {
       file = path.join(process.cwd(), "data", "rvu.sqlite");
     }
