@@ -3,6 +3,7 @@ import { createServerClient } from "@supabase/ssr";
 import { createSession, domains, emailAllowed } from "@/lib/rvu/auth";
 import { id, now, one, run } from "@/lib/rvu/db";
 
+export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 export async function GET(request: NextRequest) {
