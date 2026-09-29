@@ -88,6 +88,95 @@ export default function AuthPage({
         </Link>
       </div>
       <div className="rv-auth">
+        <div
+          style={{
+            position: "relative",
+            width: "100%",
+            height: 110,
+            borderRadius: 14,
+            overflow: "hidden",
+            marginBottom: 18,
+            border: "1px solid var(--rv-line)",
+            boxShadow: "0 8px 24px rgba(0,0,0,0.25)",
+          }}
+        >
+          <img
+            src="/images/rvu_campus_hero.jpg"
+            alt="RV University Campus"
+            style={{
+              width: "100%",
+              height: "100%",
+              objectFit: "cover",
+              filter: "brightness(0.7)",
+            }}
+          />
+          <div
+            style={{
+              position: "absolute",
+              inset: 0,
+              background:
+                "linear-gradient(180deg, rgba(15,23,42,0.2) 0%, rgba(15,23,42,0.85) 100%)",
+            }}
+          />
+          <div
+            style={{
+              position: "absolute",
+              bottom: 12,
+              left: 14,
+              right: 14,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+            }}
+          >
+            <div style={{ textAlign: "left" }}>
+              <span
+                style={{
+                  fontSize: "0.65rem",
+                  letterSpacing: "0.08em",
+                  fontWeight: 750,
+                  color: "#34d399",
+                  textTransform: "uppercase",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 6,
+                }}
+              >
+                <span
+                  style={{
+                    width: 6,
+                    height: 6,
+                    borderRadius: "50%",
+                    background: "#10b981",
+                  }}
+                />
+                RV University Campus
+              </span>
+              <div
+                style={{
+                  fontSize: "0.85rem",
+                  fontWeight: 700,
+                  color: "#fff",
+                }}
+              >
+                KHOJ Lost & Found Network
+              </div>
+            </div>
+            <span
+              style={{
+                fontSize: "0.68rem",
+                padding: "3px 8px",
+                borderRadius: 6,
+                background: "rgba(255,255,255,0.15)",
+                backdropFilter: "blur(6px)",
+                color: "#fff",
+                fontWeight: 600,
+              }}
+            >
+              Bengaluru
+            </span>
+          </div>
+        </div>
         <Mark large />
         <span className="rv-eyebrow">RV UNIVERSITY · LOST & FOUND</span>
         <h1>{title}</h1>
