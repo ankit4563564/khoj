@@ -13,3 +13,6 @@ export * from "./normalizeFingerprint";
 export * from "./ownerTextExtractor";
 export * from "./ownerVisionExtractor";
 export * from "./extractOwnerFingerprint";
+export * from "./foundFingerprintTypes";
+export * from "./foundVisionExtractor";
+export * from "./extractFoundFingerprint";

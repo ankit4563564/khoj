@@ -11,7 +11,8 @@
     "seed:demo": "node scripts/seed-demo.mjs",
     "test:integration": "node tests/rvu-e2e.mjs",
     "test:fingerprints": "npx tsx tests/fingerprints.test.mjs",
-    "test:owner-fingerprint": "npx tsx tests/owner-fingerprint.test.mjs"
+    "test:owner-fingerprint": "npx tsx tests/owner-fingerprint.test.mjs",
+    "test:found-fingerprint": "npx tsx tests/found-fingerprint.test.mjs"
   },
   "dependencies": {
     "@supabase/ssr": "^0.12.7",

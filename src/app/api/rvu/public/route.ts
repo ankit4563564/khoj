@@ -5,6 +5,7 @@ import { audit, id, matchReport, notify, now, one, report, run, transaction } fr
 import { decodeUsn } from '@/lib/rvu/identity';
 import { completeHandover } from '@/lib/rvu/recovery';
 import { categories, departments, type Handover, type Report } from '@/lib/rvu/types';
+import { extractAndSaveFoundFingerprint } from '@/lib/rvu/fingerprints';
 export const runtime='nodejs';export const dynamic='force-dynamic';
 const json=(data:unknown,status=200)=>NextResponse.json(data,{status,headers:{'Cache-Control':'no-store'}});
 const fail=(e:unknown)=>json({error:e instanceof HttpError?e.message:'Unable to save this report. Please try again.'},e instanceof HttpError?e.status:500);
@@ -38,5 +39,20 @@ export async function POST(req:Request){try{
     else matchReport(r);
     audit(actor,r.id,'Found report submitted');
   });
+
+  // Phase 3: Extract and persist found item fingerprint without breaking report flow
+  try {
+    await extractAndSaveFoundFingerprint({
+      foundReportId: r.id,
+      imageId,
+      location: r.location,
+      foundAt: r.date,
+      finderNotes: r.description,
+      actorUserId: actor,
+    });
+  } catch (fpErr) {
+    console.warn('Found item fingerprint background extraction warning:', fpErr);
+  }
+
   return json({ok:true,id:r.id,message:p.action==='found_id'?'Report received. If this ID is linked, we’ll privately notify its owner. Keep the card safe and retain this receipt.':'Found report received. Keep this receipt to track the return.'});
 }catch(e){return fail(e);}}

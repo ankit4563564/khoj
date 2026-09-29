@@ -37,6 +37,7 @@ import {
   type Claim,
   type Report,
 } from "@/lib/rvu/types";
+import { extractAndSaveFoundFingerprint } from "@/lib/rvu/fingerprints";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 const json = (data: unknown, status = 200) =>
@@ -376,6 +377,22 @@ export async function POST(req: Request) {
           `${kind === "lost" ? "Lost" : "Found"} report submitted`,
         );
       });
+
+      if (kind === "found") {
+        try {
+          await extractAndSaveFoundFingerprint({
+            foundReportId: record.id,
+            imageId: record.imageId,
+            location: record.location,
+            foundAt: record.date,
+            finderNotes: record.description,
+            actorUserId: user.id,
+          });
+        } catch (fpErr) {
+          console.warn("Found fingerprint background extraction warning:", fpErr);
+        }
+      }
+
       return json({ ok: true, id: record.id });
     }
     if (action === "claim") {
