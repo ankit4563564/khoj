@@ -157,14 +157,9 @@ function Navigation() {
               </button>
             </>
           ) : (
-            <>
-              <Link href="/login" className={path === "/login" ? "active" : ""}>
-                Log In
-              </Link>
-              <Link href="/signup" className="rv-nav-signup">
-                Sign Up <ArrowUpRight size={13} />
-              </Link>
-            </>
+            <Link href="/login" className="rv-nav-signup">
+              Sign In with RVU <ArrowUpRight size={13} />
+            </Link>
           )}
         </nav>
       </header>
