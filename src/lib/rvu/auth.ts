@@ -18,9 +18,12 @@ export const domains = () =>
   (process.env.RVU_EMAIL_DOMAINS || "rvu.edu.in")
     .split(",")
     .map((s) => s.trim().toLowerCase());
-export const emailAllowed = (email: string) =>
-  /^[^\s@]+@[^\s@]+$/.test(email) &&
-  domains().includes(email.split("@")[1]?.toLowerCase());
+export const emailAllowed = (email: string) => {
+  if (!/^[^\s@]+@[^\s@]+$/.test(email)) return false;
+  const domain = email.split("@")[1]?.toLowerCase();
+  const configured = domains();
+  return configured.some((d) => domain === d || domain.endsWith(`.${d}`));
+};
 function derive(password: string, salt: string): Promise<Buffer> {
   return new Promise((resolve, reject) =>
     scrypt(password, salt, 64, (err, key) =>
@@ -66,7 +69,7 @@ export async function requireUser(staff = false): Promise<Account> {
     );
   return user;
 }
-export async function createSession(userId: string) {
+export async function createSession(userId: string): Promise<string> {
   const token = secret();
   run("DELETE FROM sessions WHERE expires<?", Date.now());
   run(
@@ -75,13 +78,20 @@ export async function createSession(userId: string) {
     userId,
     Date.now() + 7 * 86400000,
   );
-  (await cookies()).set("rvu_session", token, {
-    httpOnly: true,
-    secure: process.env.APP_URL?.startsWith("https://") || false,
-    sameSite: "lax",
-    path: "/",
-    maxAge: 7 * 86400,
-  });
+  try {
+    const jar = await cookies();
+    jar.set("rvu_session", token, {
+      httpOnly: true,
+      secure: process.env.APP_URL?.startsWith("https://") || false,
+      sameSite: "lax",
+      path: "/",
+      maxAge: 7 * 86400,
+    });
+  } catch {
+    // If running in a context where cookies() cannot be mutated directly,
+    // caller can use the returned token to set the cookie on their response.
+  }
+  return token;
 }
 export async function logout() {
   const jar = await cookies();

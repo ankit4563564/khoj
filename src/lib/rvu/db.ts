@@ -16,10 +16,51 @@ const { DatabaseSync } = require("node:sqlite") as {
 let connection: Database | undefined;
 export function db(): Database {
   if (connection) return connection;
-  const file =
-    process.env.RVU_DB_PATH || path.join(process.cwd(), "data", "rvu.sqlite");
-  fs.mkdirSync(path.dirname(file), { recursive: true });
-  connection = new DatabaseSync(file);
+
+  const isServerless = Boolean(
+    process.env.VERCEL ||
+    process.env.AWS_LAMBDA_FUNCTION_NAME ||
+    process.env.LAMBDA_TASK_ROOT ||
+    process.env.NETLIFY
+  );
+
+  let file = process.env.RVU_DB_PATH;
+  if (!file) {
+    if (isServerless) {
+      file = path.join("/tmp", "rvu.sqlite");
+    } else {
+      file = path.join(process.cwd(), "data", "rvu.sqlite");
+    }
+  }
+
+  const tmpFallback = path.join("/tmp", "rvu.sqlite");
+
+  const openDb = (targetPath: string): Database => {
+    fs.mkdirSync(path.dirname(targetPath), { recursive: true });
+    if (targetPath === tmpFallback && !fs.existsSync(targetPath)) {
+      const sourceDb = path.join(process.cwd(), "data", "rvu.sqlite");
+      if (fs.existsSync(sourceDb)) {
+        try {
+          fs.copyFileSync(sourceDb, targetPath);
+        } catch {
+          // Ignore copy failure; new DatabaseSync will initialize the schema
+        }
+      }
+    }
+    return new DatabaseSync(targetPath);
+  };
+
+  try {
+    connection = openDb(file);
+  } catch (err: any) {
+    if (file !== tmpFallback && (err?.code === "EROFS" || err?.code === "EACCES" || isServerless)) {
+      console.warn(`Database path ${file} not writable (${err?.message}), falling back to ${tmpFallback}`);
+      file = tmpFallback;
+      connection = openDb(file);
+    } else {
+      throw err;
+    }
+  }
   connection.exec(`PRAGMA journal_mode=WAL; PRAGMA foreign_keys=ON; PRAGMA busy_timeout=5000;
     CREATE TABLE IF NOT EXISTS users (id TEXT PRIMARY KEY, name TEXT NOT NULL, email TEXT UNIQUE NOT NULL, studentId TEXT NOT NULL, department TEXT NOT NULL, role TEXT NOT NULL DEFAULT 'student', verified INTEGER NOT NULL DEFAULT 0, password TEXT, googleId TEXT UNIQUE, createdAt TEXT NOT NULL);
     CREATE TABLE IF NOT EXISTS sessions (token TEXT PRIMARY KEY, userId TEXT NOT NULL REFERENCES users(id), expires INTEGER NOT NULL);

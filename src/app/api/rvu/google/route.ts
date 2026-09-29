@@ -6,10 +6,10 @@ import { createClient as createSupabaseServerClient } from "@/lib/supabase/serve
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 export async function GET(req: Request) {
-  const forwardedProto = req.headers.get("x-forwarded-proto") || "http";
+  const forwardedProto = req.headers.get("x-forwarded-proto") || (process.env.VERCEL ? "https" : "http");
   const forwardedHost = req.headers.get("x-forwarded-host") || req.headers.get("host") || new URL(req.url).host;
   const inferredBase = `${forwardedProto}://${forwardedHost}`;
-  const base = (process.env.APP_URL || inferredBase).replace(/\/+$/, "");
+  const base = ((process.env.VERCEL && inferredBase) || process.env.APP_URL || inferredBase).replace(/\/+$/, "");
   const clientId = process.env.GOOGLE_CLIENT_ID,
     clientSecret = process.env.GOOGLE_CLIENT_SECRET;
   const errorRedirect = (message: string) =>
@@ -176,9 +176,17 @@ export async function GET(req: Request) {
         profile.sub,
         user.id,
       );
-    await createSession(user.id);
+    const sessionToken = await createSession(user.id);
     const destination = user.role === "staff" ? "/hod" : "/dashboard";
-    return NextResponse.redirect(`${base}${destination}`);
+    const redirectRes = NextResponse.redirect(`${base}${destination}`);
+    redirectRes.cookies.set("rvu_session", sessionToken, {
+      httpOnly: true,
+      secure: base.startsWith("https://"),
+      sameSite: "lax",
+      path: "/",
+      maxAge: 7 * 86400,
+    });
+    return redirectRes;
   } catch {
     return errorRedirect(
       "Google sign-in could not be completed. Please try again.",
