@@ -60,6 +60,13 @@ export async function POST(req:Request){try{
     // Phase 4: Baseline candidate matching engine (generates and stores candidate scorecards, no auto-verification)
     const { matchFoundItem } = await import('@/lib/rvu/matching');
     await matchFoundItem(r.id);
+    // Phase 6: Multimodal candidate reranking engine (ranks candidates, no ownership verdict)
+    try {
+      const { rerankFoundCandidates } = await import('@/lib/rvu/reranking');
+      await rerankFoundCandidates(r.id);
+    } catch (rerankErr) {
+      console.warn('Multimodal candidate reranking warning:', rerankErr);
+    }
   } catch (fpErr) {
     console.warn('Found item processing background warning:', fpErr);
   }

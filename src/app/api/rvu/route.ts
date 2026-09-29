@@ -397,6 +397,13 @@ export async function POST(req: Request) {
           }
           const { matchFoundItem } = await import("@/lib/rvu/matching");
           await matchFoundItem(record.id);
+          // Phase 6: Multimodal candidate reranking engine (ranks candidates, no ownership verdict)
+          try {
+            const { rerankFoundCandidates } = await import("@/lib/rvu/reranking");
+            await rerankFoundCandidates(record.id);
+          } catch (rerankErr) {
+            console.warn("Multimodal candidate reranking warning:", rerankErr);
+          }
         } catch (fpErr) {
           console.warn("Found fingerprint and matching background warning:", fpErr);
         }
