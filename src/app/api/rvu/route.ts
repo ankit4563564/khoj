@@ -53,9 +53,10 @@ export async function GET() {
     const user = await sessionUser();
     const config = {
       google: Boolean(
-        process.env.GOOGLE_CLIENT_ID &&
-          process.env.GOOGLE_CLIENT_SECRET &&
-          process.env.APP_URL,
+        (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) ||
+          (process.env.NEXT_PUBLIC_SUPABASE_URL &&
+            (process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ||
+              process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY)),
       ),
       vision: Boolean(process.env.GEMINI_API_KEY),
       email: Boolean(process.env.RESEND_API_KEY && process.env.EMAIL_FROM),

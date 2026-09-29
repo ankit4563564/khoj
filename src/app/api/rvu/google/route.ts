@@ -1,22 +1,65 @@
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
-import { createSession, emailAllowed, hash, secret } from "@/lib/rvu/auth";
+import { createSession, domains, emailAllowed, hash, secret } from "@/lib/rvu/auth";
 import { id, now, one, run } from "@/lib/rvu/db";
+import { createClient as createSupabaseServerClient } from "@/lib/supabase/server";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 export async function GET(req: Request) {
-  const base = process.env.APP_URL || new URL(req.url).origin;
+  const forwardedProto = req.headers.get("x-forwarded-proto") || "http";
+  const forwardedHost = req.headers.get("x-forwarded-host") || req.headers.get("host") || new URL(req.url).host;
+  const inferredBase = `${forwardedProto}://${forwardedHost}`;
+  const base = (process.env.APP_URL || inferredBase).replace(/\/+$/, "");
   const clientId = process.env.GOOGLE_CLIENT_ID,
     clientSecret = process.env.GOOGLE_CLIENT_SECRET;
   const errorRedirect = (message: string) =>
     NextResponse.redirect(`${base}/login?error=${encodeURIComponent(message)}`);
-  if (!clientId || !clientSecret || !process.env.APP_URL)
+
+  const url = new URL(req.url);
+  const useSupabase = Boolean(
+    process.env.NEXT_PUBLIC_SUPABASE_URL &&
+      (process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ||
+        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY),
+  );
+
+  // If Supabase is configured and this is the initial login click, delegate to Supabase OAuth
+  if (useSupabase && !url.searchParams.has("code") && !url.searchParams.has("error")) {
+    try {
+      const supabase = await createSupabaseServerClient();
+      const configuredDomains = domains();
+      const queryParams: Record<string, string> = {
+        prompt: "select_account",
+      };
+      if (
+        configuredDomains.length === 1 &&
+        configuredDomains[0] &&
+        !configuredDomains[0].includes("gmail.com")
+      ) {
+        queryParams.hd = configuredDomains[0];
+      }
+      const { data, error } = await supabase.auth.signInWithOAuth({
+        provider: "google",
+        options: {
+          redirectTo: `${base}/auth/callback`,
+          queryParams,
+        },
+      });
+      if (error || !data?.url) {
+        return errorRedirect(error?.message || "Could not initialize Google sign-in with Supabase.");
+      }
+      return NextResponse.redirect(data.url);
+    } catch (e) {
+      console.error("Supabase OAuth start failed:", e);
+      return errorRedirect("Could not connect to Supabase authentication.");
+    }
+  }
+
+  if (!clientId || !clientSecret)
     return errorRedirect(
-      "Google sign-in is not configured yet. Use your university email and password.",
+      "Google sign-in is not configured yet. Configure Supabase or Google credentials in .env.local.",
     );
   const jar = await cookies();
-  const url = new URL(req.url),
-    redirectUri = `${base}/api/rvu/google`;
+  const redirectUri = `${base}/api/rvu/google`;
   if (!url.searchParams.has("code") && !url.searchParams.has("error")) {
     const state = secret(),
       verifier = secret();
@@ -28,7 +71,7 @@ export async function GET(req: Request) {
       maxAge: 600,
     });
     const target = new URL("https://accounts.google.com/o/oauth2/v2/auth");
-    target.search = new URLSearchParams({
+    const params: Record<string, string> = {
       client_id: clientId,
       redirect_uri: redirectUri,
       response_type: "code",
@@ -37,7 +80,16 @@ export async function GET(req: Request) {
       code_challenge: Buffer.from(hash(verifier), "hex").toString("base64url"),
       code_challenge_method: "S256",
       prompt: "select_account",
-    }).toString();
+    };
+    const configuredDomains = domains();
+    if (
+      configuredDomains.length === 1 &&
+      configuredDomains[0] &&
+      !configuredDomains[0].includes("gmail.com")
+    ) {
+      params.hd = configuredDomains[0];
+    }
+    target.search = new URLSearchParams(params).toString();
     return NextResponse.redirect(target);
   }
   try {
@@ -79,9 +131,16 @@ export async function GET(req: Request) {
       typeof profile.sub !== "string" ||
       !emailAllowed(String(profile.email).toLowerCase())
     )
-      return errorRedirect("Use your verified @rvu.edu.in Google account.");
-    let user = one<{ id: string; googleId: string | null; verified: number }>(
-      "SELECT id,googleId,verified FROM users WHERE email=?",
+      return errorRedirect(
+        `Use your verified university Google account (@${domains().join(", @")}).`,
+      );
+    let user = one<{
+      id: string;
+      googleId: string | null;
+      verified: number;
+      role: string;
+    }>(
+      "SELECT id,googleId,verified,role FROM users WHERE email=?",
       profile.email.toLowerCase(),
     );
     if (user && user.googleId && user.googleId !== profile.sub)
@@ -105,7 +164,7 @@ export async function GET(req: Request) {
         profile.sub,
         now(),
       );
-      user = { id: userId, googleId: profile.sub, verified: 1 };
+      user = { id: userId, googleId: profile.sub, verified: 1, role: "student" };
     } else
       run(
         "UPDATE users SET googleId=?,verified=1 WHERE id=?",
@@ -113,7 +172,8 @@ export async function GET(req: Request) {
         user.id,
       );
     await createSession(user.id);
-    return NextResponse.redirect(`${base}/dashboard`);
+    const destination = user.role === "staff" ? "/hod" : "/dashboard";
+    return NextResponse.redirect(`${base}${destination}`);
   } catch {
     return errorRedirect(
       "Google sign-in could not be completed. Please try again.",
