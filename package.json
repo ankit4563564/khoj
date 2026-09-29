@@ -9,7 +9,8 @@
     "lint": "next lint",
     "staff": "node --env-file-if-exists=.env.local scripts/staff.mjs",
     "seed:demo": "node scripts/seed-demo.mjs",
-    "test:integration": "node tests/rvu-e2e.mjs"
+    "test:integration": "node tests/rvu-e2e.mjs",
+    "test:fingerprints": "npx tsx tests/fingerprints.test.mjs"
   },
   "dependencies": {
     "@supabase/ssr": "^0.12.7",

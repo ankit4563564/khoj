@@ -1,0 +1,10 @@
+/**
+ * KHOJ — Fingerprints & Matching Data Foundation
+ * Barrel export for repository services, validations, and types.
+ */
+
+export * from "./validation";
+export * from "./itemFingerprintRepository";
+export * from "./foundFingerprintRepository";
+export * from "./candidateRepository";
+export * from "./verificationRepository";

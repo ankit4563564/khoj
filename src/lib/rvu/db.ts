@@ -1,6 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { randomUUID } from "node:crypto";
+import { createRequire } from "node:module";
 import type { Account, Report, Claim } from "./types";
 
 type Value = string | number | null | Uint8Array;
@@ -10,7 +11,9 @@ type Statement = {
   all(...args: Value[]): unknown[];
 };
 type Database = { exec(sql: string): void; prepare(sql: string): Statement };
-const { DatabaseSync } = require("node:sqlite") as {
+
+const req = typeof require !== "undefined" ? require : createRequire(import.meta.url);
+const { DatabaseSync } = req("node:sqlite") as {
   DatabaseSync: new (file: string) => Database;
 };
 let connection: Database | undefined;
@@ -86,6 +89,14 @@ export function db(): Database {
     CREATE TABLE IF NOT EXISTS activity (id TEXT PRIMARY KEY, type TEXT NOT NULL, title TEXT NOT NULL, location TEXT NOT NULL DEFAULT '', reportId TEXT, createdAt TEXT NOT NULL);
     CREATE TABLE IF NOT EXISTS handovers (reportId TEXT PRIMARY KEY REFERENCES reports(id), ownerId TEXT NOT NULL REFERENCES users(id), finderId TEXT NOT NULL REFERENCES users(id), ownerConfirmed INTEGER NOT NULL DEFAULT 0, finderConfirmed INTEGER NOT NULL DEFAULT 0, point TEXT NOT NULL, returnedAt TEXT, rewardStatus TEXT NOT NULL DEFAULT 'offered', finderUpi TEXT NOT NULL DEFAULT '');
     CREATE TABLE IF NOT EXISTS blind_attempts (id TEXT PRIMARY KEY, userId TEXT NOT NULL, reportId TEXT NOT NULL, accepted INTEGER NOT NULL, createdAt TEXT NOT NULL);
+    CREATE TABLE IF NOT EXISTS item_fingerprints (id TEXT PRIMARY KEY, itemId TEXT NOT NULL UNIQUE REFERENCES protected_items(id) ON DELETE CASCADE, category TEXT NOT NULL, subcategory TEXT, brand TEXT NOT NULL DEFAULT '', model TEXT NOT NULL DEFAULT '', color TEXT NOT NULL DEFAULT '', material TEXT, visibleText TEXT NOT NULL DEFAULT '[]', logos TEXT NOT NULL DEFAULT '[]', accessories TEXT NOT NULL DEFAULT '[]', distinctiveFeatures TEXT NOT NULL DEFAULT '[]', condition TEXT NOT NULL DEFAULT 'unknown', ownerDescription TEXT NOT NULL DEFAULT '', normalizedDescription TEXT NOT NULL DEFAULT '', metadata TEXT NOT NULL DEFAULT '{}', imageReference TEXT, textEmbeddingReference TEXT, imageEmbeddingReference TEXT, createdAt TEXT NOT NULL, updatedAt TEXT NOT NULL);
+    CREATE TABLE IF NOT EXISTS found_fingerprints (id TEXT PRIMARY KEY, foundReportId TEXT NOT NULL UNIQUE REFERENCES reports(id) ON DELETE CASCADE, category TEXT NOT NULL, subcategory TEXT, brand TEXT NOT NULL DEFAULT '', model TEXT NOT NULL DEFAULT '', color TEXT NOT NULL DEFAULT '', material TEXT, visibleText TEXT NOT NULL DEFAULT '[]', logos TEXT NOT NULL DEFAULT '[]', accessories TEXT NOT NULL DEFAULT '[]', distinctiveFeatures TEXT NOT NULL DEFAULT '[]', condition TEXT NOT NULL DEFAULT 'unknown', visualDescription TEXT NOT NULL DEFAULT '', foundLocation TEXT NOT NULL DEFAULT '', foundAt TEXT NOT NULL, imageReference TEXT, imageEmbeddingReference TEXT, metadata TEXT NOT NULL DEFAULT '{}', createdAt TEXT NOT NULL, updatedAt TEXT NOT NULL);
+    CREATE TABLE IF NOT EXISTS candidate_matches (id TEXT PRIMARY KEY, foundReportId TEXT NOT NULL REFERENCES reports(id) ON DELETE CASCADE, itemId TEXT NOT NULL REFERENCES protected_items(id) ON DELETE CASCADE, vectorSimilarity REAL, attributeScore INTEGER NOT NULL DEFAULT 0, uniqueClueScore INTEGER NOT NULL DEFAULT 0, locationScore INTEGER NOT NULL DEFAULT 0, timeScore INTEGER NOT NULL DEFAULT 0, overallScore INTEGER NOT NULL DEFAULT 0, confidenceTier TEXT NOT NULL, status TEXT NOT NULL DEFAULT 'candidate', evidence TEXT NOT NULL DEFAULT '[]', createdAt TEXT NOT NULL, updatedAt TEXT NOT NULL, UNIQUE(foundReportId, itemId));
+    CREATE TABLE IF NOT EXISTS verification_evidence (id TEXT PRIMARY KEY, candidateMatchId TEXT NOT NULL REFERENCES candidate_matches(id) ON DELETE CASCADE, itemId TEXT NOT NULL REFERENCES protected_items(id) ON DELETE CASCADE, question TEXT NOT NULL, ownerAnswer TEXT NOT NULL, expectedEvidence TEXT NOT NULL, result TEXT NOT NULL DEFAULT 'pending', evidenceSource TEXT NOT NULL DEFAULT 'owner_registration', createdAt TEXT NOT NULL);
+    CREATE INDEX IF NOT EXISTS idx_item_fingerprints_item ON item_fingerprints(itemId);
+    CREATE INDEX IF NOT EXISTS idx_found_fingerprints_report ON found_fingerprints(foundReportId);
+    CREATE INDEX IF NOT EXISTS idx_candidate_matches_pair ON candidate_matches(foundReportId, itemId);
+    CREATE INDEX IF NOT EXISTS idx_candidate_matches_score ON candidate_matches(overallScore DESC);
   `);
   return connection;
 }
