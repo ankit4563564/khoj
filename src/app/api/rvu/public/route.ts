@@ -50,8 +50,11 @@ export async function POST(req:Request){try{
       finderNotes: r.description,
       actorUserId: actor,
     });
+    // Phase 4: Baseline candidate matching engine (generates and stores candidate scorecards, no auto-verification)
+    const { matchFoundItem } = await import('@/lib/rvu/matching');
+    await matchFoundItem(r.id);
   } catch (fpErr) {
-    console.warn('Found item fingerprint background extraction warning:', fpErr);
+    console.warn('Found item processing background warning:', fpErr);
   }
 
   return json({ok:true,id:r.id,message:p.action==='found_id'?'Report received. If this ID is linked, we’ll privately notify its owner. Keep the card safe and retain this receipt.':'Found report received. Keep this receipt to track the return.'});

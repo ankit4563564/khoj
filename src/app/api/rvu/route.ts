@@ -388,8 +388,10 @@ export async function POST(req: Request) {
             finderNotes: record.description,
             actorUserId: user.id,
           });
+          const { matchFoundItem } = await import("@/lib/rvu/matching");
+          await matchFoundItem(record.id);
         } catch (fpErr) {
-          console.warn("Found fingerprint background extraction warning:", fpErr);
+          console.warn("Found fingerprint and matching background warning:", fpErr);
         }
       }
 
