@@ -3,14 +3,52 @@ import { choice, HttpError, originCheck, rateLimit, requireUser, text } from '@/
 import { activity, audit, id, matchReport, notify, now, one, report, run, transaction } from '@/lib/rvu/db';
 import { completeHandover, ensureHandover } from '@/lib/rvu/recovery';
 import { categories, type Claim, type Handover, type ProtectedItem, type Report } from '@/lib/rvu/types';
+import { extractAndSaveOwnerFingerprint } from '@/lib/rvu/fingerprints';
 export const runtime='nodejs';export const dynamic='force-dynamic';
 const json=(data:unknown,status=200)=>NextResponse.json(data,{status,headers:{'Cache-Control':'no-store'}});
 export async function POST(req:Request){try{
   originCheck(req);const user=await requireUser();const raw=await req.text();if(raw.length>12000)throw new HttpError(413,'Request too large.');const p=JSON.parse(raw);
   if(p.action==='register'){
-    rateLimit(`protect:${user.id}`,30,3600);const itemId=id('item');const imageId=typeof p.imageId==='string'&&p.imageId?p.imageId:null;
-    if(imageId&&!one('SELECT id FROM uploads WHERE id=? AND userId=?',imageId,user.id))throw new HttpError(400,'Upload your own photo first.');
-    transaction(()=>{run('INSERT INTO protected_items (id,userId,name,category,brand,color,description,privateDetail,imageId,createdAt) VALUES (?,?,?,?,?,?,?,?,?,?)',itemId,user.id,text(p.name,'Item name',3,100),choice(p.category,categories,'category'),text(p.brand||'','Brand',0,80),text(p.color||'','Colour',0,60),text(p.description,'Description',10,2000),text(p.privateDetail,'Private identifying detail',8,1000),imageId,now());activity('registered','A belonging was registered');});return json({ok:true,id:itemId});
+    rateLimit(`protect:${user.id}`,30,3600);const itemId=id('item');
+    const rawImageIds: string[] = Array.isArray(p.imageIds) ? p.imageIds : (typeof p.imageId === 'string' && p.imageId ? [p.imageId] : []);
+    const imageIds = rawImageIds.filter(idStr => typeof idStr === 'string' && idStr.trim().length > 0).slice(0, 3);
+    for (const imgId of imageIds) {
+      if (!one('SELECT id FROM uploads WHERE id=? AND userId=?', imgId, user.id)) {
+        throw new HttpError(400, 'Upload your own photo first.');
+      }
+    }
+    const primaryImageId = imageIds[0] || null;
+    const itemName = text(p.name,'Item name',3,100);
+    const itemCategory = choice(p.category,categories,'category');
+    const itemBrand = text(p.brand||'','Brand',0,80);
+    const itemColor = text(p.color||'','Colour',0,60);
+    const itemDesc = text(p.description,'Description',10,2000);
+    const itemPrivateDetail = text(p.privateDetail,'Private identifying detail',8,1000);
+
+    transaction(()=>{
+      run('INSERT INTO protected_items (id,userId,name,category,brand,color,description,privateDetail,imageId,createdAt) VALUES (?,?,?,?,?,?,?,?,?,?)',
+        itemId, user.id, itemName, itemCategory, itemBrand, itemColor, itemDesc, itemPrivateDetail, primaryImageId, now());
+      activity('registered','A belonging was registered');
+    });
+
+    // Phase 2: Asynchronously extract and persist owner item fingerprint without breaking registration
+    try {
+      await extractAndSaveOwnerFingerprint({
+        itemId,
+        name: itemName,
+        category: itemCategory,
+        brand: itemBrand,
+        color: itemColor,
+        description: itemDesc,
+        privateDetail: itemPrivateDetail,
+        imageIds,
+        actorUserId: user.id,
+      });
+    } catch (fpErr) {
+      console.warn('Owner fingerprint extraction background error:', fpErr);
+    }
+
+    return json({ok:true,id:itemId});
   }
   if(p.action==='mark_lost'){
     const itemId=text(p.itemId,'Item reference'),location=text(p.location,'Last known location',2,150),date=text(p.date,'Date',10,10);
