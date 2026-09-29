@@ -87,7 +87,8 @@ export function db(): Database {
     CREATE TABLE IF NOT EXISTS found_ids (reportId TEXT PRIMARY KEY REFERENCES reports(id), targetUserId TEXT REFERENCES users(id), subjectHash TEXT NOT NULL, createdAt TEXT NOT NULL);
     CREATE TABLE IF NOT EXISTS protected_items (id TEXT PRIMARY KEY, userId TEXT NOT NULL REFERENCES users(id), name TEXT NOT NULL, category TEXT NOT NULL, brand TEXT NOT NULL, color TEXT NOT NULL, description TEXT NOT NULL, privateDetail TEXT NOT NULL, imageId TEXT REFERENCES uploads(id), status TEXT NOT NULL DEFAULT 'safe', lostReportId TEXT REFERENCES reports(id), createdAt TEXT NOT NULL);
     CREATE TABLE IF NOT EXISTS activity (id TEXT PRIMARY KEY, type TEXT NOT NULL, title TEXT NOT NULL, location TEXT NOT NULL DEFAULT '', reportId TEXT, createdAt TEXT NOT NULL);
-    CREATE TABLE IF NOT EXISTS handovers (reportId TEXT PRIMARY KEY REFERENCES reports(id), ownerId TEXT NOT NULL REFERENCES users(id), finderId TEXT NOT NULL REFERENCES users(id), ownerConfirmed INTEGER NOT NULL DEFAULT 0, finderConfirmed INTEGER NOT NULL DEFAULT 0, point TEXT NOT NULL, returnedAt TEXT, rewardStatus TEXT NOT NULL DEFAULT 'offered', finderUpi TEXT NOT NULL DEFAULT '');
+    CREATE TABLE IF NOT EXISTS handovers (reportId TEXT PRIMARY KEY REFERENCES reports(id), ownerId TEXT NOT NULL REFERENCES users(id), finderId TEXT NOT NULL REFERENCES users(id), ownerConfirmed INTEGER NOT NULL DEFAULT 0, finderConfirmed INTEGER NOT NULL DEFAULT 0, point TEXT NOT NULL, returnedAt TEXT, rewardStatus TEXT NOT NULL DEFAULT 'offered', finderUpi TEXT NOT NULL DEFAULT '', candidateMatchId TEXT, state TEXT NOT NULL DEFAULT 'RECOVERY_PENDING', proposedLocation TEXT NOT NULL DEFAULT '', proposedDate TEXT NOT NULL DEFAULT '', proposedTimeWindow TEXT NOT NULL DEFAULT '', proposedBy TEXT NOT NULL DEFAULT 'owner', ownerConfirmedAt TEXT, finderConfirmedAt TEXT, finderActionToken TEXT NOT NULL DEFAULT '', tokenExpiresAt TEXT, issueReason TEXT NOT NULL DEFAULT '', cancellationReason TEXT NOT NULL DEFAULT '', createdAt TEXT NOT NULL DEFAULT '', updatedAt TEXT NOT NULL DEFAULT '', workflowVersion TEXT NOT NULL DEFAULT 'v1');
+    CREATE TABLE IF NOT EXISTS recovery_events (id TEXT PRIMARY KEY, reportId TEXT NOT NULL REFERENCES reports(id) ON DELETE CASCADE, candidateMatchId TEXT, actorId TEXT NOT NULL, actorRole TEXT NOT NULL, eventType TEXT NOT NULL, fromState TEXT NOT NULL, toState TEXT NOT NULL, metadata TEXT NOT NULL DEFAULT '{}', createdAt TEXT NOT NULL);
     CREATE TABLE IF NOT EXISTS blind_attempts (id TEXT PRIMARY KEY, userId TEXT NOT NULL, reportId TEXT NOT NULL, accepted INTEGER NOT NULL, createdAt TEXT NOT NULL);
     CREATE TABLE IF NOT EXISTS item_fingerprints (id TEXT PRIMARY KEY, itemId TEXT NOT NULL UNIQUE REFERENCES protected_items(id) ON DELETE CASCADE, category TEXT NOT NULL, subcategory TEXT, brand TEXT NOT NULL DEFAULT '', model TEXT NOT NULL DEFAULT '', color TEXT NOT NULL DEFAULT '', material TEXT, visibleText TEXT NOT NULL DEFAULT '[]', logos TEXT NOT NULL DEFAULT '[]', accessories TEXT NOT NULL DEFAULT '[]', distinctiveFeatures TEXT NOT NULL DEFAULT '[]', condition TEXT NOT NULL DEFAULT 'unknown', ownerDescription TEXT NOT NULL DEFAULT '', normalizedDescription TEXT NOT NULL DEFAULT '', metadata TEXT NOT NULL DEFAULT '{}', imageReference TEXT, textEmbeddingReference TEXT, imageEmbeddingReference TEXT, createdAt TEXT NOT NULL, updatedAt TEXT NOT NULL);
     CREATE TABLE IF NOT EXISTS found_fingerprints (id TEXT PRIMARY KEY, foundReportId TEXT NOT NULL UNIQUE REFERENCES reports(id) ON DELETE CASCADE, category TEXT NOT NULL, subcategory TEXT, brand TEXT NOT NULL DEFAULT '', model TEXT NOT NULL DEFAULT '', color TEXT NOT NULL DEFAULT '', material TEXT, visibleText TEXT NOT NULL DEFAULT '[]', logos TEXT NOT NULL DEFAULT '[]', accessories TEXT NOT NULL DEFAULT '[]', distinctiveFeatures TEXT NOT NULL DEFAULT '[]', condition TEXT NOT NULL DEFAULT 'unknown', visualDescription TEXT NOT NULL DEFAULT '', foundLocation TEXT NOT NULL DEFAULT '', foundAt TEXT NOT NULL, imageReference TEXT, imageEmbeddingReference TEXT, metadata TEXT NOT NULL DEFAULT '{}', createdAt TEXT NOT NULL, updatedAt TEXT NOT NULL);
@@ -107,6 +108,26 @@ export function db(): Database {
     CREATE INDEX IF NOT EXISTS idx_verif_sessions_state ON verification_sessions(state);
     CREATE INDEX IF NOT EXISTS idx_verif_audits_sess ON verification_audits(sessionId);
   `);
+  const alterCols = [
+    "ALTER TABLE handovers ADD COLUMN candidateMatchId TEXT",
+    "ALTER TABLE handovers ADD COLUMN state TEXT NOT NULL DEFAULT 'RECOVERY_PENDING'",
+    "ALTER TABLE handovers ADD COLUMN proposedLocation TEXT NOT NULL DEFAULT ''",
+    "ALTER TABLE handovers ADD COLUMN proposedDate TEXT NOT NULL DEFAULT ''",
+    "ALTER TABLE handovers ADD COLUMN proposedTimeWindow TEXT NOT NULL DEFAULT ''",
+    "ALTER TABLE handovers ADD COLUMN proposedBy TEXT NOT NULL DEFAULT 'owner'",
+    "ALTER TABLE handovers ADD COLUMN ownerConfirmedAt TEXT",
+    "ALTER TABLE handovers ADD COLUMN finderConfirmedAt TEXT",
+    "ALTER TABLE handovers ADD COLUMN finderActionToken TEXT NOT NULL DEFAULT ''",
+    "ALTER TABLE handovers ADD COLUMN tokenExpiresAt TEXT",
+    "ALTER TABLE handovers ADD COLUMN issueReason TEXT NOT NULL DEFAULT ''",
+    "ALTER TABLE handovers ADD COLUMN cancellationReason TEXT NOT NULL DEFAULT ''",
+    "ALTER TABLE handovers ADD COLUMN createdAt TEXT NOT NULL DEFAULT ''",
+    "ALTER TABLE handovers ADD COLUMN updatedAt TEXT NOT NULL DEFAULT ''",
+    "ALTER TABLE handovers ADD COLUMN workflowVersion TEXT NOT NULL DEFAULT 'v1'",
+  ];
+  for (const sql of alterCols) {
+    try { connection.exec(sql); } catch {}
+  }
   return connection;
 }
 export function one<T>(sql: string, ...args: Value[]): T | undefined {
