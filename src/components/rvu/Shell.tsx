@@ -34,7 +34,7 @@ function Navigation() {
     setNotices(false);
   }, [path]);
   useEffect(() => {
-    setTheme(localStorage.getItem("rvu-theme") || "light");
+    setTheme(localStorage.getItem("rvu-theme") || "dark");
   }, []);
   useEffect(() => {
     const media = window.matchMedia("(prefers-color-scheme: dark)");
@@ -50,22 +50,22 @@ function Navigation() {
   const links = [
     ["/dashboard", "Home"],
     ["/board", "Campus Board"],
-    ["/report/lost", "I Lost Something"],
-    ["/report/found", "I Found Something"],
-    ["/status", "My Reports"],
+    ["/report/lost", "Lost Item"],
+    ["/report/found", "Found Something"],
+    ["/status", "Status & Matches"],
     ...(data.user?.role === "staff" ? [["/hod", "Staff Desk"]] : []),
   ];
   return (
     <>
       <header className="rv-nav">
         <Link
-          href={data.user ? "/dashboard" : "/about"}
+          href={data.user ? "/dashboard" : "/"}
           className="rv-brand"
           aria-label="KHOJ RV University home"
         >
           <Mark />
           <span>
-            KHOJ<span className="rv-brand-sub">RV UNIVERSITY</span>
+            KHOJ<span className="rv-brand-sub"><span className="kh-pulse-dot" style={{ width: 5, height: 5, marginRight: 5, verticalAlign: 'middle' }} />RV UNIVERSITY NODE</span>
           </span>
         </Link>
         <button

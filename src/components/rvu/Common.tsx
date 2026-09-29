@@ -52,11 +52,13 @@ export function Empty({
   description,
   href,
   label,
+  onClick,
 }: {
   title: string;
   description: string;
   href?: string;
   label?: string;
+  onClick?: () => void;
 }) {
   return (
     <div className="rv-empty">
@@ -65,7 +67,13 @@ export function Empty({
       </span>
       <h3>{title}</h3>
       <p>{description}</p>
-      {href && (
+      {onClick && (
+        <button className="rv-button primary" type="button" onClick={onClick}>
+          {label}
+          <ArrowUpRight size={16} />
+        </button>
+      )}
+      {href && !onClick && (
         <Link className="rv-button primary" href={href}>
           {label}
           <ArrowUpRight size={16} />

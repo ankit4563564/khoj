@@ -91,15 +91,44 @@ export async function logout() {
 }
 export function originCheck(req: Request) {
   const origin = req.headers.get("origin");
+  if (!origin) return; // Allow requests without Origin header (e.g. standard same-origin navigation)
+
+  const reqOrigin = new URL(req.url).origin;
   const host = req.headers.get("host") || new URL(req.url).host;
-  const localHost = /^(localhost|127\.0\.0\.1)(:\d+)?$/.test(host);
-  const expected = process.env.APP_URL
-    ? new URL(process.env.APP_URL).origin
-    : process.env.NODE_ENV !== "production" && localHost
-      ? `http://${host}`
-      : new URL(req.url).origin;
-  if (origin !== expected)
+  const hostOriginHttp = `http://${host}`;
+  const hostOriginHttps = `https://${host}`;
+
+  const allowedOrigins = new Set<string>([reqOrigin, hostOriginHttp, hostOriginHttps]);
+  if (process.env.APP_URL) {
+    try {
+      allowedOrigins.add(new URL(process.env.APP_URL).origin);
+    } catch {
+      // ignore invalid APP_URL format
+    }
+  }
+
+  // In development, also allow any localhost/127.0.0.1 origin
+  const isLocalDev =
+    process.env.NODE_ENV !== "production" ||
+    /^(localhost|127\.0\.0\.1)(:\d+)?$/.test(host);
+
+  if (isLocalDev) {
+    try {
+      const parsedOrigin = new URL(origin);
+      if (
+        parsedOrigin.hostname === "localhost" ||
+        parsedOrigin.hostname === "127.0.0.1"
+      ) {
+        return;
+      }
+    } catch {
+      // ignore
+    }
+  }
+
+  if (!allowedOrigins.has(origin)) {
     throw new HttpError(403, "Request origin was not accepted.");
+  }
 }
 export function rateLimit(key: string, max = 10, seconds = 900) {
   const time = Date.now();
