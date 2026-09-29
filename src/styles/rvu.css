@@ -3429,5 +3429,933 @@ small {
   color: var(--rv-muted);
 }
 
+/* =======================================================
+   RU LOST IN RVU? — REDESIGNED LANDING PAGE EXPERIENCE
+   Apple + Linear + Modern Collegiate Culture
+   Obsidian Dark Mode (#0B0E16) with Electric Indigo & Emerald
+   ======================================================= */
 
+.ru-page-wrap {
+  width: 100%;
+  max-width: 1240px;
+  margin: 0 auto;
+  padding: 0 16px 80px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 80px;
+}
 
+@media (min-width: 768px) {
+  .ru-page-wrap {
+    padding: 0 24px 100px 24px;
+    gap: 120px;
+  }
+}
+
+/* Section Header Shared */
+.ru-section-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 14px;
+  border-radius: 999px;
+  background: rgba(99, 102, 241, 0.1);
+  border: 1px solid rgba(99, 102, 241, 0.28);
+  color: #a5b4fc;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  margin-bottom: 16px;
+}
+
+.ru-section-eyebrow.emerald {
+  background: rgba(16, 185, 129, 0.1);
+  border-color: rgba(16, 185, 129, 0.3);
+  color: #34d399;
+}
+
+.ru-section-eyebrow.amber {
+  background: rgba(245, 158, 11, 0.1);
+  border-color: rgba(245, 158, 11, 0.3);
+  color: #fbbf24;
+}
+
+.ru-section-heading {
+  font-size: clamp(1.8rem, 4vw, 2.75rem);
+  font-weight: 800;
+  letter-spacing: -0.035em;
+  line-height: 1.15;
+  color: var(--rv-text);
+  margin-bottom: 14px;
+}
+
+.ru-section-sub {
+  font-size: clamp(0.95rem, 1.8vw, 1.15rem);
+  color: var(--rv-muted);
+  max-width: 620px;
+  line-height: 1.6;
+}
+
+/* 1. HERO SECTION */
+.ru-hero {
+  padding-top: 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 28px;
+}
+
+.ru-hero-title {
+  font-size: clamp(2.8rem, 8vw, 6.2rem);
+  font-weight: 900;
+  line-height: 0.95;
+  letter-spacing: -0.045em;
+  text-transform: uppercase;
+  color: #f8fafc;
+  margin: 0;
+  text-shadow: 0 4px 30px rgba(0, 0, 0, 0.6);
+}
+
+.ru-hero-title span {
+  display: block;
+  background: linear-gradient(180deg, #ffffff 30%, #94a3b8 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.ru-hero-tagline {
+  font-size: clamp(1.4rem, 3.2vw, 2.3rem);
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  color: #c7d2fe;
+  margin-top: -8px;
+}
+
+.ru-hero-copy {
+  font-size: clamp(1rem, 1.8vw, 1.2rem);
+  color: var(--rv-muted);
+  max-width: 620px;
+  line-height: 1.6;
+  margin: 0 auto;
+}
+
+/* Dual CTAs */
+.ru-hero-cta-group {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+  max-width: 480px;
+  margin: 6px auto 0 auto;
+}
+
+@media (min-width: 640px) {
+  .ru-hero-cta-group {
+    flex-direction: row;
+    max-width: 540px;
+    gap: 14px;
+  }
+}
+
+.ru-btn-lost {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 16px 24px;
+  border-radius: 14px;
+  background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+  color: #ffffff;
+  font-size: 1.05rem;
+  font-weight: 700;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 8px 30px -4px rgba(99, 102, 241, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.3);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  text-decoration: none;
+}
+
+.ru-btn-lost:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 35px -2px rgba(99, 102, 241, 0.65);
+}
+
+.ru-btn-found {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 16px 24px;
+  border-radius: 14px;
+  background: rgba(21, 27, 41, 0.85);
+  backdrop-filter: blur(16px);
+  border: 1px solid #2d374d;
+  color: #f8fafc;
+  font-size: 1.05rem;
+  font-weight: 700;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  text-decoration: none;
+}
+
+.ru-btn-found:hover {
+  transform: translateY(-2px);
+  border-color: #818cf8;
+  background: #1e2638;
+}
+
+.ru-btn-badge {
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  background: rgba(16, 185, 129, 0.2);
+  color: #34d399;
+  border: 1px solid rgba(16, 185, 129, 0.35);
+  padding: 2px 7px;
+  border-radius: 999px;
+  margin-left: 4px;
+}
+
+/* Interactive Hero Object Showcase */
+.ru-hero-showcase {
+  width: 100%;
+  margin-top: 14px;
+  background: #151b29;
+  border: 1px solid #222a3a;
+  border-radius: 24px;
+  overflow: hidden;
+  box-shadow: 0 24px 60px -12px rgba(0, 0, 0, 0.7);
+  position: relative;
+}
+
+.ru-showcase-image-container {
+  width: 100%;
+  position: relative;
+  aspect-ratio: 16 / 9;
+  max-height: 520px;
+  overflow: hidden;
+  background: #0b0e16;
+}
+
+.ru-showcase-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.ru-showcase-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(11, 14, 22, 0.1) 0%, rgba(11, 14, 22, 0.8) 100%);
+  pointer-events: none;
+}
+
+/* Floating Object Pins */
+.ru-object-pin {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: rgba(15, 20, 31, 0.85);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: #ffffff;
+  font-size: 0.76rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+  pointer-events: auto;
+  transition: all 0.2s ease;
+  z-index: 10;
+}
+
+.ru-object-pin:hover {
+  transform: scale(1.05);
+  border-color: #6366f1;
+}
+
+.ru-pin-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #6366f1;
+  box-shadow: 0 0 8px #6366f1;
+}
+
+.ru-pin-dot.emerald {
+  background: #10b981;
+  box-shadow: 0 0 8px #10b981;
+}
+
+/* Object Showcase Bottom Bar */
+.ru-showcase-toolbar {
+  padding: 18px 20px;
+  background: #10131b;
+  border-top: 1px solid #222a3a;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+@media (min-width: 768px) {
+  .ru-showcase-toolbar {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    padding: 18px 28px;
+  }
+}
+
+.ru-flow-pills {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+}
+
+.ru-flow-pill {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border-radius: 999px;
+  background: #151b29;
+  border: 1px solid #222a3a;
+  color: #94a3b8;
+  font-size: 0.78rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.ru-flow-pill.active {
+  background: rgba(99, 102, 241, 0.15);
+  border-color: #6366f1;
+  color: #a5b4fc;
+}
+
+.ru-flow-pill.active.emerald {
+  background: rgba(16, 185, 129, 0.15);
+  border-color: #10b981;
+  color: #34d399;
+}
+
+.ru-flow-arrow {
+  color: #475569;
+  font-size: 0.75rem;
+}
+
+.ru-showcase-active-note {
+  font-size: 0.86rem;
+  color: #e2e8f0;
+  text-align: left;
+}
+
+.ru-showcase-active-note strong {
+  color: #6366f1;
+  margin-right: 6px;
+}
+
+/* 2. THE PROBLEM SECTION */
+.ru-problem-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 32px;
+  margin-top: 24px;
+  align-items: center;
+}
+
+@media (min-width: 900px) {
+  .ru-problem-grid {
+    grid-template-columns: 1.1fr 1fr;
+    gap: 48px;
+  }
+}
+
+.ru-problem-visual {
+  position: relative;
+  border-radius: 20px;
+  overflow: hidden;
+  border: 1px solid #222a3a;
+  background: #151b29;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+}
+
+.ru-problem-img {
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  object-fit: cover;
+  display: block;
+}
+
+.ru-problem-tag {
+  position: absolute;
+  bottom: 16px;
+  left: 16px;
+  right: 16px;
+  padding: 12px 16px;
+  border-radius: 12px;
+  background: rgba(11, 14, 22, 0.88);
+  backdrop-filter: blur(14px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #f8fafc;
+  font-size: 0.86rem;
+}
+
+.ru-hotspots-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.ru-hotspot-item {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 18px;
+  border-radius: 14px;
+  background: #151b29;
+  border: 1px solid #222a3a;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.ru-hotspot-item:hover,
+.ru-hotspot-item.active {
+  background: #1e2638;
+  border-color: #6366f1;
+  transform: translateX(4px);
+}
+
+.ru-hotspot-icon {
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  background: rgba(99, 102, 241, 0.12);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #818cf8;
+  flex-shrink: 0;
+}
+
+.ru-hotspot-content h4 {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #f8fafc;
+  margin: 0 0 2px 0;
+}
+
+.ru-hotspot-content p {
+  font-size: 0.82rem;
+  color: #94a3b8;
+  margin: 0;
+}
+
+/* 3. HOW IT WORKS (4 STEPS) */
+.ru-how-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 18px;
+  margin-top: 32px;
+}
+
+@media (min-width: 640px) {
+  .ru-how-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 1024px) {
+  .ru-how-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+.ru-how-card {
+  padding: 24px;
+  border-radius: 18px;
+  background: #151b29;
+  border: 1px solid #222a3a;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 20px;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  position: relative;
+}
+
+.ru-how-card:hover {
+  transform: translateY(-4px);
+  border-color: #2d374d;
+  box-shadow: 0 16px 36px -8px rgba(0, 0, 0, 0.5);
+}
+
+.ru-how-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.ru-how-num {
+  font-size: 1.8rem;
+  font-weight: 800;
+  letter-spacing: -0.04em;
+  color: #3b4252;
+}
+
+.ru-how-card:hover .ru-how-num {
+  color: #6366f1;
+}
+
+.ru-how-icon-wrap {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background: #1e2638;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #818cf8;
+}
+
+.ru-how-title {
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: #f8fafc;
+  letter-spacing: -0.02em;
+  margin-bottom: 6px;
+}
+
+.ru-how-desc {
+  font-size: 0.88rem;
+  color: #94a3b8;
+  line-height: 1.5;
+}
+
+/* 4. THE MAGIC MOMENT */
+.ru-magic-box {
+  border-radius: 24px;
+  background: #151b29;
+  border: 1px solid #222a3a;
+  padding: 28px 20px;
+  margin-top: 32px;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.6);
+}
+
+@media (min-width: 768px) {
+  .ru-magic-box {
+    padding: 44px 40px;
+  }
+}
+
+.ru-magic-comparison {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 20px;
+  align-items: center;
+}
+
+@media (min-width: 860px) {
+  .ru-magic-comparison {
+    grid-template-columns: 1fr auto 1fr;
+    gap: 32px;
+  }
+}
+
+.ru-magic-card {
+  padding: 22px;
+  border-radius: 16px;
+  background: #10131b;
+  border: 1px solid #222a3a;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.ru-magic-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.ru-magic-badge {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  padding: 3px 8px;
+  border-radius: 6px;
+}
+
+.ru-magic-badge.found {
+  background: rgba(99, 102, 241, 0.15);
+  color: #818cf8;
+}
+
+.ru-magic-badge.mine {
+  background: rgba(16, 185, 129, 0.15);
+  color: #34d399;
+}
+
+.ru-magic-item-title {
+  font-size: 1.1rem;
+  font-weight: 750;
+  color: #f8fafc;
+}
+
+.ru-magic-detail {
+  font-size: 0.86rem;
+  color: #94a3b8;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.ru-magic-beam-col {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+
+.ru-magic-node {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background: rgba(99, 102, 241, 0.15);
+  border: 1.5px solid #6366f1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #818cf8;
+  box-shadow: 0 0 24px rgba(99, 102, 241, 0.35);
+}
+
+.ru-magic-beam-text {
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: #818cf8;
+}
+
+.ru-blind-prompt-card {
+  margin-top: 28px;
+  padding: 20px 24px;
+  border-radius: 14px;
+  background: rgba(11, 14, 22, 0.8);
+  border: 1px dashed #2d374d;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  text-align: center;
+}
+
+@media (min-width: 640px) {
+  .ru-blind-prompt-card {
+    text-align: left;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
+}
+
+.ru-blind-prompt-text strong {
+  display: block;
+  font-size: 0.95rem;
+  color: #f8fafc;
+}
+
+.ru-blind-prompt-text span {
+  font-size: 0.84rem;
+  color: #94a3b8;
+}
+
+/* 5. FOUND SOMETHING SECTION */
+.ru-found-banner {
+  border-radius: 24px;
+  overflow: hidden;
+  background: #151b29;
+  border: 1px solid #222a3a;
+  display: grid;
+  grid-template-columns: 1fr;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.6);
+}
+
+@media (min-width: 900px) {
+  .ru-found-banner {
+    grid-template-columns: 1.1fr 1fr;
+  }
+}
+
+.ru-found-img-col {
+  position: relative;
+  background: #0b0e16;
+  min-height: 280px;
+}
+
+.ru-found-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.ru-found-content-col {
+  padding: 32px 24px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 20px;
+}
+
+@media (min-width: 768px) {
+  .ru-found-content-col {
+    padding: 48px 40px;
+  }
+}
+
+.ru-quick-flow-chips {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.ru-quick-flow-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 8px;
+  background: #1e2638;
+  border: 1px solid #2d374d;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #cbd5e1;
+}
+
+/* 6. RECOVERY CELEBRATION */
+.ru-recovery-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 32px;
+  align-items: center;
+}
+
+@media (min-width: 900px) {
+  .ru-recovery-grid {
+    grid-template-columns: 1fr 1.1fr;
+    gap: 48px;
+  }
+}
+
+.ru-recovery-content {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.ru-recovery-stats {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  margin-top: 10px;
+}
+
+.ru-recovery-stat-box strong {
+  display: block;
+  font-size: 1.8rem;
+  font-weight: 800;
+  color: #34d399;
+  letter-spacing: -0.03em;
+}
+
+.ru-recovery-stat-box span {
+  font-size: 0.8rem;
+  color: #94a3b8;
+}
+
+.ru-recovery-visual-wrap {
+  border-radius: 20px;
+  overflow: hidden;
+  border: 1px solid #222a3a;
+  background: #151b29;
+  position: relative;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+}
+
+.ru-recovery-img {
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  object-fit: cover;
+  display: block;
+}
+
+.ru-recovery-badge {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  border-radius: 999px;
+  background: rgba(16, 185, 129, 0.9);
+  backdrop-filter: blur(12px);
+  color: #ffffff;
+  font-size: 0.82rem;
+  font-weight: 700;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+}
+
+/* 7. CAMPUS QR & IDENTITY */
+.ru-qr-box {
+  border-radius: 24px;
+  background: #151b29;
+  border: 1px solid #222a3a;
+  padding: 32px 20px;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 32px;
+  align-items: center;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.6);
+}
+
+@media (min-width: 900px) {
+  .ru-qr-box {
+    grid-template-columns: 1.1fr 1fr;
+    padding: 44px 40px;
+  }
+}
+
+.ru-id-mockup-card {
+  border-radius: 18px;
+  background: linear-gradient(135deg, #182030 0%, #10131b 100%);
+  border: 1px solid #2d374d;
+  padding: 24px;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.6);
+}
+
+.ru-id-mockup-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid #222a3a;
+  padding-bottom: 14px;
+  margin-bottom: 16px;
+}
+
+.ru-id-crest {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.ru-id-crest strong {
+  font-size: 0.95rem;
+  letter-spacing: 0.05em;
+  color: #f8fafc;
+}
+
+.ru-id-body {
+  display: flex;
+  gap: 18px;
+  align-items: center;
+}
+
+.ru-id-photo-frame {
+  width: 72px;
+  height: 88px;
+  border-radius: 8px;
+  background: #222a3a;
+  border: 1px solid #2d374d;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #64748b;
+  flex-shrink: 0;
+}
+
+.ru-id-data h4 {
+  font-size: 1.1rem;
+  font-weight: 750;
+  color: #f8fafc;
+  margin: 0 0 4px 0;
+}
+
+.ru-id-data p {
+  font-size: 0.82rem;
+  color: #94a3b8;
+  margin: 0 0 8px 0;
+}
+
+.ru-id-qr-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 6px;
+  background: rgba(99, 102, 241, 0.15);
+  border: 1px solid rgba(99, 102, 241, 0.3);
+  color: #818cf8;
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+/* FINAL CTA SECTION */
+.ru-final-cta {
+  border-radius: 28px;
+  background: linear-gradient(180deg, #151b29 0%, #0b0e16 100%);
+  border: 1px solid #222a3a;
+  padding: 48px 24px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 24px;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.7);
+}
+
+@media (min-width: 768px) {
+  .ru-final-cta {
+    padding: 72px 48px;
+  }
+}
+
+.ru-final-headline {
+  font-size: clamp(2.4rem, 6vw, 4.5rem);
+  font-weight: 900;
+  line-height: 1;
+  letter-spacing: -0.04em;
+  text-transform: uppercase;
+  color: #f8fafc;
+}
+
+.ru-final-sub {
+  font-size: clamp(1.1rem, 2vw, 1.35rem);
+  color: #94a3b8;
+}
+
+.ru-final-brand-mark {
+  margin-top: 16px;
+  font-size: 0.95rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: #64748b;
+  text-transform: uppercase;
+}

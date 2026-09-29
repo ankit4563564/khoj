@@ -53,12 +53,10 @@ function Navigation() {
     return () => media.removeEventListener("change", apply);
   }, [theme]);
   const links = [
-    ["/", "Home"],
     ["/board", "Browse Items"],
-    ["/report/lost", "Report Lost"],
-    ["/report/found", "Report Found"],
-    ["/status", "My Reports"],
-    ...(data.user?.role === "staff" ? [["/hod", "Staff Desk"]] : []),
+    ["/status", "My Items"],
+    ["/report/found", "Found Something"],
+    ...(data.user ? [["/profile", "Profile"]] : []),
   ];
   return (
     <>
@@ -70,7 +68,7 @@ function Navigation() {
         >
           <Mark />
           <span>
-            KHOJ<span className="rv-brand-sub"><span className="kh-pulse-dot" style={{ width: 5, height: 5, marginRight: 5, verticalAlign: 'middle' }} />RV UNIVERSITY</span>
+            KHOJ<span className="rv-brand-sub"><span className="kh-pulse-dot" style={{ width: 5, height: 5, marginRight: 5, verticalAlign: 'middle' }} />RU LOST IN RVU?</span>
           </span>
         </Link>
         <button
@@ -91,9 +89,22 @@ function Navigation() {
               {label}
             </Link>
           ))}
+          <Link
+            href="/report/found"
+            className="ru-btn-found"
+            style={{
+              padding: "7px 14px",
+              fontSize: "0.82rem",
+              borderRadius: "999px",
+              border: "1px solid rgba(16, 185, 129, 0.4)",
+              background: "rgba(16, 185, 129, 0.12)",
+              color: "#34d399",
+            }}
+          >
+            Report Found Item
+          </Link>
           {data.user ? (
             <>
-              <Link href="/profile" className={path === "/profile" ? "active" : ""}>Profile</Link>
               <div className="rv-notification-wrap">
                 <button
                   className="rv-icon-button"
