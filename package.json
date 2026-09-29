@@ -19,7 +19,9 @@
     "test:reranking-engine": "npx tsx tests/reranking-engine.test.mts",
     "test:verification-engine": "npx tsx tests/verification-engine.test.mts",
     "test:handover-workflow": "npx tsx tests/handover-workflow.test.mts",
-    "test:reward-workflow": "npx tsx tests/reward-workflow.test.mts"
+    "test:reward-workflow": "npx tsx tests/reward-workflow.test.mts",
+    "test:hardening": "npx tsx tests/production-hardening.test.mts",
+    "evaluate:khoj": "npx tsx scripts/evaluate-khoj.mts"
   },
   "dependencies": {
     "@supabase/ssr": "^0.12.7",
