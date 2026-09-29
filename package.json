@@ -18,7 +18,8 @@
     "benchmark:retrieval": "npx tsx tests/retrieval-benchmark.test.mts",
     "test:reranking-engine": "npx tsx tests/reranking-engine.test.mts",
     "test:verification-engine": "npx tsx tests/verification-engine.test.mts",
-    "test:handover-workflow": "npx tsx tests/handover-workflow.test.mts"
+    "test:handover-workflow": "npx tsx tests/handover-workflow.test.mts",
+    "test:reward-workflow": "npx tsx tests/reward-workflow.test.mts"
   },
   "dependencies": {
     "@supabase/ssr": "^0.12.7",
