@@ -21,7 +21,9 @@
     "test:handover-workflow": "npx tsx tests/handover-workflow.test.mts",
     "test:reward-workflow": "npx tsx tests/reward-workflow.test.mts",
     "test:hardening": "npx tsx tests/production-hardening.test.mts",
-    "evaluate:khoj": "npx tsx scripts/evaluate-khoj.mts"
+    "evaluate:khoj": "npx tsx scripts/evaluate-khoj.mts",
+    "test:pilot": "npx tsx tests/pilot-operations.test.mts",
+    "pilot:rvu": "npx tsx scripts/run-rvu-pilot.mts"
   },
   "dependencies": {
     "@supabase/ssr": "^0.12.7",

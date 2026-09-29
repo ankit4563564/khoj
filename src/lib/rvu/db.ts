@@ -101,6 +101,8 @@ export function db(): Database {
     CREATE TABLE IF NOT EXISTS reward_events (id TEXT PRIMARY KEY, rewardId TEXT NOT NULL REFERENCES rewards(id) ON DELETE CASCADE, reportId TEXT NOT NULL, actorId TEXT NOT NULL, actorRole TEXT NOT NULL, eventType TEXT NOT NULL, fromState TEXT NOT NULL, toState TEXT NOT NULL, metadata TEXT NOT NULL DEFAULT '{}', createdAt TEXT NOT NULL);
     CREATE TABLE IF NOT EXISTS pipeline_events (id TEXT PRIMARY KEY, reportId TEXT NOT NULL, stage TEXT NOT NULL, status TEXT NOT NULL, stageDurationMs INTEGER NOT NULL DEFAULT 0, metadata TEXT NOT NULL DEFAULT '{}', createdAt TEXT NOT NULL);
     CREATE TABLE IF NOT EXISTS recovery_feedback (id TEXT PRIMARY KEY, reportId TEXT NOT NULL REFERENCES reports(id) ON DELETE CASCADE, userId TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE, actorRole TEXT NOT NULL, easyRating TEXT NOT NULL, confusionNote TEXT NOT NULL DEFAULT '', createdAt TEXT NOT NULL);
+    CREATE TABLE IF NOT EXISTS pilot_ground_truth (id TEXT PRIMARY KEY, reportId TEXT NOT NULL REFERENCES reports(id) ON DELETE CASCADE, trueOwnerId TEXT, trueItemId TEXT, hasRealMatch INTEGER NOT NULL DEFAULT 0, candidateRank INTEGER, verificationResult TEXT NOT NULL, handoverResult TEXT NOT NULL, returnedResult TEXT NOT NULL, caseClassification TEXT NOT NULL, failureStage TEXT NOT NULL, notes TEXT NOT NULL DEFAULT '', createdAt TEXT NOT NULL, updatedAt TEXT NOT NULL);
+    CREATE TABLE IF NOT EXISTS pilot_incidents (id TEXT PRIMARY KEY, reportId TEXT, incidentType TEXT NOT NULL, severity TEXT NOT NULL, reportedBy TEXT NOT NULL, details TEXT NOT NULL, status TEXT NOT NULL DEFAULT 'open', resolutionNotes TEXT, resolvedBy TEXT, createdAt TEXT NOT NULL, resolvedAt TEXT);
     CREATE INDEX IF NOT EXISTS idx_item_fingerprints_item ON item_fingerprints(itemId);
     CREATE INDEX IF NOT EXISTS idx_found_fingerprints_report ON found_fingerprints(foundReportId);
     CREATE INDEX IF NOT EXISTS idx_candidate_matches_pair ON candidate_matches(foundReportId, itemId);
@@ -121,6 +123,10 @@ export function db(): Database {
     CREATE INDEX IF NOT EXISTS idx_pipeline_events_stage ON pipeline_events(stage);
     CREATE INDEX IF NOT EXISTS idx_recovery_feedback_report ON recovery_feedback(reportId);
     CREATE INDEX IF NOT EXISTS idx_recovery_feedback_user ON recovery_feedback(userId);
+    CREATE INDEX IF NOT EXISTS idx_pilot_gt_report ON pilot_ground_truth(reportId);
+    CREATE INDEX IF NOT EXISTS idx_pilot_gt_item ON pilot_ground_truth(trueItemId);
+    CREATE INDEX IF NOT EXISTS idx_pilot_incidents_report ON pilot_incidents(reportId);
+    CREATE INDEX IF NOT EXISTS idx_pilot_incidents_status ON pilot_incidents(status);
   `);
   const alterCols = [
     "ALTER TABLE handovers ADD COLUMN candidateMatchId TEXT",
