@@ -1,9 +1,13 @@
 export const categories = [
   "Electronics",
   "ID cards",
+  "Cards & IDs",
   "Keys",
+  "Bottles & Tumblers",
   "Bags",
+  "Bags & Backpacks",
   "Books & stationery",
+  "Books & Notes",
   "Clothing",
   "Accessories",
   "Other",

@@ -36,6 +36,11 @@ export function areCategoriesCompatible(catA: string, catB: string): boolean {
     ["accessories", "other"],
     ["bags", "accessories"],
     ["books & stationery", "accessories"],
+    ["bottles & tumblers", "accessories"],
+    ["bottles & tumblers", "other"],
+    ["cards & ids", "id cards"],
+    ["bags & backpacks", "bags"],
+    ["books & notes", "books & stationery"],
   ];
 
   for (const [p1, p2] of compatiblePairs) {
