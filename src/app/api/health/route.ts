@@ -98,11 +98,26 @@ export async function GET() {
         accErr instanceof Error ? accErr.message : String(accErr);
     }
 
+    // 6. Test rateLimit query (validates rate_limits ON CONFLICT disambiguation)
+    try {
+      await one(
+        'INSERT INTO rate_limits (key, count, expires) VALUES (?, 1, ?) ON CONFLICT (key) DO UPDATE SET count = rate_limits.count + 1 RETURNING count',
+        'health-check-rate-limit',
+        Date.now() + 60000,
+      );
+      diagnostics.rateLimitQueryOk = true;
+    } catch (rlErr) {
+      diagnostics.rateLimitQueryOk = false;
+      diagnostics.rateLimitQueryError =
+        rlErr instanceof Error ? rlErr.message : String(rlErr);
+    }
+
     const isHealthy = Boolean(
       diagnostics.connection &&
       missingTables.length === 0 &&
       diagnostics.sessionsQueryOk &&
-      diagnostics.accountQueryOk,
+      diagnostics.accountQueryOk &&
+      diagnostics.rateLimitQueryOk,
     );
 
     return NextResponse.json(

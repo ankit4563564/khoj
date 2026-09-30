@@ -264,6 +264,9 @@ async function ensureSchema(): Promise<void> {
               "reviewedBy" TEXT,
               note TEXT NOT NULL DEFAULT ''
             );
+
+            CREATE UNIQUE INDEX IF NOT EXISTS idx_matches_pair ON matches ("lostId", "foundId");
+            CREATE UNIQUE INDEX IF NOT EXISTS idx_claims_pair ON claims ("reportId", "userId");
           `);
         } finally {
           client.release();

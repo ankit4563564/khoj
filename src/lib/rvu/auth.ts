@@ -153,7 +153,7 @@ export async function rateLimit(key: string, max = 10, seconds = 900) {
   const time = Date.now();
   await run('DELETE FROM rate_limits WHERE expires<?', time);
   await run(
-    "INSERT INTO rate_limits VALUES (?,1,?) ON CONFLICT(key) DO UPDATE SET count=count+1",
+    'INSERT INTO rate_limits (key, count, expires) VALUES (?, 1, ?) ON CONFLICT (key) DO UPDATE SET count = rate_limits.count + 1',
     key,
     time + seconds * 1000,
   );
