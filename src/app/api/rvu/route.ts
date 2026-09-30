@@ -46,7 +46,9 @@ const fail = (error: unknown) => {
   if (error instanceof HttpError)
     return json({ error: error.message }, error.status);
   console.error("RVU request failed:", error);
-  return json({ error: "Something went wrong. Please try again." }, 500);
+  const msg =
+    error instanceof Error ? error.message : "Something went wrong. Please try again.";
+  return json({ error: msg }, 500);
 };
 
 export async function GET() {
@@ -106,15 +108,37 @@ export async function GET() {
           "SELECT a.*,u.name AS \"actorName\" FROM audit a JOIN users u ON u.id=a.\"actorId\" ORDER BY a.\"createdAt\" DESC LIMIT 100",
         )
       : [];
-    const pFound = await one<{n:number}>("SELECT COUNT(*) AS n FROM reports WHERE kind='found' AND status IN ('open','in_custody')");
-    const pMatching = await one<{n:number}>("SELECT COUNT(DISTINCT m.\"foundId\") AS n FROM matches m JOIN reports f ON f.id=m.\"foundId\" JOIN reports l ON l.id=m.\"lostId\" WHERE f.status IN ('open','in_custody') AND l.status='open'");
-    const pVerif = await one<{n:number}>("SELECT COUNT(*) AS n FROM claims WHERE status IN ('pending','approved')");
-    const pReturned = await one<{n:number}>("SELECT COUNT(*) AS n FROM reports WHERE kind='found' AND status='returned'");
-    const identityStats = staff ? {
-      total: (await one<{n:number}>("SELECT COUNT(*) AS n FROM users WHERE role='student'"))!.n,
-      linked: (await one<{n:number}>("SELECT COUNT(*) AS n FROM identity_links WHERE status='LINKED'"))!.n,
-      pending: (await one<{n:number}>("SELECT COUNT(*) AS n FROM identity_links WHERE status='REQUIRES_REVIEW'"))!.n,
-    } : {total:0,linked:0,pending:0};
+    const pFound = await one<{ n: string | number }>(
+      "SELECT COUNT(*) AS n FROM reports WHERE kind='found' AND status IN ('open','in_custody')",
+    );
+    const pMatching = await one<{ n: string | number }>(
+      "SELECT COUNT(DISTINCT m.\"foundId\") AS n FROM matches m JOIN reports f ON f.id=m.\"foundId\" JOIN reports l ON l.id=m.\"lostId\" WHERE f.status IN ('open','in_custody') AND l.status='open'",
+    );
+    const pVerif = await one<{ n: string | number }>(
+      "SELECT COUNT(*) AS n FROM claims WHERE status IN ('pending','approved')",
+    );
+    const pReturned = await one<{ n: string | number }>(
+      "SELECT COUNT(*) AS n FROM reports WHERE kind='found' AND status='returned'",
+    );
+    const identityStats = staff
+      ? {
+          total: Number(
+            (await one<{ n: string | number }>(
+              "SELECT COUNT(*) AS n FROM users WHERE role='student'",
+            ))?.n ?? 0,
+          ),
+          linked: Number(
+            (await one<{ n: string | number }>(
+              "SELECT COUNT(*) AS n FROM identity_links WHERE status='LINKED'",
+            ))?.n ?? 0,
+          ),
+          pending: Number(
+            (await one<{ n: string | number }>(
+              "SELECT COUNT(*) AS n FROM identity_links WHERE status='REQUIRES_REVIEW'",
+            ))?.n ?? 0,
+          ),
+        }
+      : { total: 0, linked: 0, pending: 0 };
     return json({
       user,
       config,
@@ -123,13 +147,16 @@ export async function GET() {
       matches,
       notifications,
       audit: events,
-      registeredItems: await all('SELECT * FROM protected_items WHERE "userId"=? ORDER BY "createdAt" DESC', user.id),
+      registeredItems: await all(
+        'SELECT * FROM protected_items WHERE "userId"=? ORDER BY "createdAt" DESC',
+        user.id,
+      ),
       activity: await all('SELECT * FROM activity ORDER BY "createdAt" DESC LIMIT 40'),
       pipeline: {
-        found: pFound!.n,
-        matching: pMatching!.n,
-        verification: pVerif!.n,
-        returned: pReturned!.n,
+        found: Number(pFound?.n ?? 0),
+        matching: Number(pMatching?.n ?? 0),
+        verification: Number(pVerif?.n ?? 0),
+        returned: Number(pReturned?.n ?? 0),
       },
       identityStats,
       handovers: (await all<import('@/lib/rvu/types').Handover>('SELECT * FROM handovers WHERE "ownerId"=? OR "finderId"=?',user.id,user.id)).map(h=>({...h,ownerId:h.ownerId===user.id?h.ownerId:'',finderId:h.finderId===user.id?h.finderId:'',isOwner:h.ownerId===user.id,isFinder:h.finderId===user.id,ownerConfirmed:Boolean(h.ownerConfirmed),finderConfirmed:Boolean(h.finderConfirmed)})),

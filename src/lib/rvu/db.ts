@@ -64,6 +64,218 @@ function runner(): Pool | PoolClient {
   return txContext.getStore() ?? getPool();
 }
 
+// ─── Self-Healing Schema Verification ─────────────────────────────────────────
+
+let _schemaInitPromise: Promise<void> | null = null;
+
+async function ensureSchema(): Promise<void> {
+  if (!_schemaInitPromise) {
+    _schemaInitPromise = (async () => {
+      try {
+        const pool = getPool();
+        const client = await pool.connect();
+        try {
+          await client.query(`
+            CREATE TABLE IF NOT EXISTS users (
+              id TEXT PRIMARY KEY,
+              name TEXT NOT NULL,
+              email TEXT UNIQUE NOT NULL,
+              "studentId" TEXT NOT NULL DEFAULT '',
+              department TEXT NOT NULL DEFAULT '',
+              role TEXT NOT NULL DEFAULT 'student',
+              verified BOOLEAN NOT NULL DEFAULT false,
+              password TEXT,
+              "googleId" TEXT UNIQUE,
+              "createdAt" TEXT NOT NULL DEFAULT ''
+            );
+
+            DO $$
+            BEGIN
+              IF NOT EXISTS (
+                SELECT 1 FROM information_schema.columns 
+                WHERE table_name='sessions' AND column_name='token'
+              ) THEN
+                DROP TABLE IF EXISTS sessions CASCADE;
+                CREATE TABLE sessions (
+                  token TEXT PRIMARY KEY,
+                  "userId" TEXT NOT NULL,
+                  expires BIGINT NOT NULL
+                );
+              END IF;
+            END $$;
+
+            CREATE TABLE IF NOT EXISTS tokens (
+              token TEXT PRIMARY KEY,
+              "userId" TEXT NOT NULL,
+              purpose TEXT NOT NULL,
+              expires BIGINT NOT NULL
+            );
+
+            CREATE TABLE IF NOT EXISTS guest_sessions (
+              token TEXT PRIMARY KEY,
+              "userId" TEXT NOT NULL,
+              expires BIGINT NOT NULL
+            );
+
+            DO $$
+            BEGIN
+              IF NOT EXISTS (
+                SELECT 1 FROM information_schema.columns 
+                WHERE table_name='rate_limits' AND column_name='expires'
+              ) THEN
+                DROP TABLE IF EXISTS rate_limits CASCADE;
+                CREATE TABLE rate_limits (
+                  key TEXT PRIMARY KEY,
+                  count INTEGER NOT NULL DEFAULT 1,
+                  expires BIGINT NOT NULL DEFAULT 0
+                );
+              END IF;
+            END $$;
+
+            CREATE TABLE IF NOT EXISTS notifications (
+              id TEXT PRIMARY KEY,
+              "userId" TEXT NOT NULL,
+              title TEXT NOT NULL,
+              href TEXT NOT NULL,
+              read INTEGER NOT NULL DEFAULT 0,
+              "createdAt" TEXT NOT NULL DEFAULT ''
+            );
+
+            DO $$
+            BEGIN
+              IF NOT EXISTS (
+                SELECT 1 FROM information_schema.columns 
+                WHERE table_name='notifications' AND column_name='read'
+              ) THEN
+                ALTER TABLE notifications ADD COLUMN IF NOT EXISTS read INTEGER NOT NULL DEFAULT 0;
+              END IF;
+            END $$;
+
+            CREATE TABLE IF NOT EXISTS activity (
+              id TEXT PRIMARY KEY,
+              type TEXT NOT NULL,
+              title TEXT NOT NULL,
+              location TEXT NOT NULL DEFAULT '',
+              "reportId" TEXT,
+              "createdAt" TEXT NOT NULL DEFAULT ''
+            );
+
+            CREATE TABLE IF NOT EXISTS audit (
+              id TEXT PRIMARY KEY,
+              "actorId" TEXT NOT NULL,
+              "reportId" TEXT NOT NULL,
+              action TEXT NOT NULL,
+              "createdAt" TEXT NOT NULL DEFAULT ''
+            );
+
+            CREATE TABLE IF NOT EXISTS reports (
+              id TEXT PRIMARY KEY,
+              "userId" TEXT NOT NULL,
+              kind TEXT NOT NULL,
+              title TEXT NOT NULL,
+              category TEXT NOT NULL,
+              color TEXT NOT NULL DEFAULT '',
+              brand TEXT NOT NULL DEFAULT '',
+              description TEXT NOT NULL,
+              "privateDetail" TEXT NOT NULL DEFAULT '',
+              location TEXT NOT NULL,
+              date TEXT NOT NULL,
+              department TEXT NOT NULL,
+              status TEXT NOT NULL DEFAULT 'open',
+              "imageId" TEXT,
+              "createdAt" TEXT NOT NULL DEFAULT '',
+              "custodyLocation" TEXT NOT NULL DEFAULT ''
+            );
+
+            CREATE TABLE IF NOT EXISTS protected_items (
+              id TEXT PRIMARY KEY,
+              "userId" TEXT NOT NULL,
+              name TEXT NOT NULL,
+              category TEXT NOT NULL,
+              brand TEXT NOT NULL DEFAULT '',
+              color TEXT NOT NULL DEFAULT '',
+              description TEXT NOT NULL,
+              "privateDetail" TEXT NOT NULL DEFAULT '',
+              "imageId" TEXT,
+              status TEXT NOT NULL DEFAULT 'safe',
+              "lostReportId" TEXT,
+              "createdAt" TEXT NOT NULL DEFAULT ''
+            );
+
+            CREATE TABLE IF NOT EXISTS claims (
+              id TEXT PRIMARY KEY,
+              "reportId" TEXT NOT NULL,
+              "userId" TEXT NOT NULL,
+              "lostReportId" TEXT,
+              proof TEXT NOT NULL,
+              status TEXT NOT NULL DEFAULT 'pending',
+              "staffNote" TEXT NOT NULL DEFAULT '',
+              "createdAt" TEXT NOT NULL DEFAULT ''
+            );
+
+            CREATE TABLE IF NOT EXISTS handovers (
+              "reportId" TEXT PRIMARY KEY,
+              "ownerId" TEXT NOT NULL,
+              "finderId" TEXT NOT NULL,
+              "ownerConfirmed" INTEGER NOT NULL DEFAULT 0,
+              "finderConfirmed" INTEGER NOT NULL DEFAULT 0,
+              point TEXT NOT NULL,
+              "returnedAt" TEXT,
+              "rewardStatus" TEXT NOT NULL DEFAULT 'offered',
+              "finderUpi" TEXT NOT NULL DEFAULT '',
+              "candidateMatchId" TEXT,
+              state TEXT NOT NULL DEFAULT 'RECOVERY_PENDING',
+              "proposedLocation" TEXT NOT NULL DEFAULT '',
+              "proposedDate" TEXT NOT NULL DEFAULT '',
+              "proposedTimeWindow" TEXT NOT NULL DEFAULT '',
+              "proposedBy" TEXT NOT NULL DEFAULT 'owner',
+              "ownerConfirmedAt" TEXT,
+              "finderConfirmedAt" TEXT,
+              "finderActionToken" TEXT NOT NULL DEFAULT '',
+              "tokenExpiresAt" TEXT,
+              "issueReason" TEXT NOT NULL DEFAULT '',
+              "cancellationReason" TEXT NOT NULL DEFAULT '',
+              "createdAt" TEXT NOT NULL DEFAULT '',
+              "updatedAt" TEXT NOT NULL DEFAULT '',
+              "workflowVersion" TEXT NOT NULL DEFAULT 'v1'
+            );
+
+            CREATE TABLE IF NOT EXISTS matches (
+              id TEXT PRIMARY KEY,
+              "lostId" TEXT NOT NULL,
+              "foundId" TEXT NOT NULL,
+              score INTEGER NOT NULL,
+              "createdAt" TEXT NOT NULL DEFAULT ''
+            );
+
+            CREATE TABLE IF NOT EXISTS found_ids (
+              "reportId" TEXT PRIMARY KEY,
+              "targetUserId" TEXT,
+              "subjectHash" TEXT NOT NULL,
+              "createdAt" TEXT NOT NULL DEFAULT ''
+            );
+
+            CREATE TABLE IF NOT EXISTS identity_links (
+              "userId" TEXT PRIMARY KEY,
+              usn TEXT NOT NULL,
+              status TEXT NOT NULL,
+              "linkedAt" TEXT,
+              "requestedAt" TEXT NOT NULL,
+              "reviewedBy" TEXT,
+              note TEXT NOT NULL DEFAULT ''
+            );
+          `);
+        } finally {
+          client.release();
+        }
+      } catch (err) {
+        console.warn('Auto-schema verification notice:', err);
+      }
+    })();
+  }
+  return _schemaInitPromise;
+}
+
 // ─── SQL helpers ──────────────────────────────────────────────────────────────
 
 /** Convert SQLite ? positional placeholders to Postgres $1, $2, … */
@@ -73,21 +285,25 @@ function toPositional(sql: string): string {
 }
 
 export async function one<T>(sql: string, ...args: Value[]): Promise<T | undefined> {
+  await ensureSchema();
   const { rows } = await runner().query(toPositional(sql), args as unknown[]);
   return (rows[0] as T) ?? undefined;
 }
 
 export async function all<T>(sql: string, ...args: Value[]): Promise<T[]> {
+  await ensureSchema();
   const { rows } = await runner().query(toPositional(sql), args as unknown[]);
   return rows as T[];
 }
 
 export async function run(sql: string, ...args: Value[]): Promise<{ changes: number }> {
+  await ensureSchema();
   const result = await runner().query(toPositional(sql), args as unknown[]);
   return { changes: result.rowCount ?? 0 };
 }
 
 export async function transaction<T>(fn: () => Promise<T>): Promise<T> {
+  await ensureSchema();
   const client = await getPool().connect();
   try {
     await client.query('BEGIN');
