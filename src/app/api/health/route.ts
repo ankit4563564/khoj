@@ -79,10 +79,30 @@ export async function GET() {
         repErr instanceof Error ? repErr.message : String(repErr);
     }
 
+    // 5. Test account query (validates users & identity_links casing)
+    try {
+      await one(
+        `SELECT u.id,u.name,u.email,u."studentId",u.department,u.role,u.verified,
+         COALESCE(i.status,'UNLINKED') AS "collegeIdStatus",
+         i.usn AS "collegeUsn",
+         i."linkedAt" AS "collegeIdLinkedAt"
+         FROM users u
+         LEFT JOIN identity_links i ON i."userId"=u.id
+         WHERE u.id=?`,
+        'health-check-id',
+      );
+      diagnostics.accountQueryOk = true;
+    } catch (accErr) {
+      diagnostics.accountQueryOk = false;
+      diagnostics.accountQueryError =
+        accErr instanceof Error ? accErr.message : String(accErr);
+    }
+
     const isHealthy = Boolean(
       diagnostics.connection &&
       missingTables.length === 0 &&
-      diagnostics.sessionsQueryOk,
+      diagnostics.sessionsQueryOk &&
+      diagnostics.accountQueryOk,
     );
 
     return NextResponse.json(

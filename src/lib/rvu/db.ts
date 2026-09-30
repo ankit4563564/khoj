@@ -328,10 +328,10 @@ export const id = (prefix: string) =>
 
 export async function account(userId: string): Promise<Account | undefined> {
   const user = await one<Account>(
-    `SELECT u.id,u.name,u.email,u.studentId,u.department,u.role,u.verified,
+    `SELECT u.id,u.name,u.email,u."studentId",u.department,u.role,u.verified,
      COALESCE(i.status,'UNLINKED') AS "collegeIdStatus",
      i.usn AS "collegeUsn",
-     i.linkedAt AS "collegeIdLinkedAt"
+     i."linkedAt" AS "collegeIdLinkedAt"
      FROM users u
      LEFT JOIN identity_links i ON i."userId"=u.id
      WHERE u.id=?`,
