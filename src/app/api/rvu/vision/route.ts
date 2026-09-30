@@ -13,10 +13,10 @@ export async function POST(req: Request) {
   try {
     originCheck(req);
     const userId = await finderActor(req);
-    rateLimit(`vision:${userId}`, 10, 3600);
+    await rateLimit(`vision:${userId}`, 10, 3600);
     const { imageId } = await req.json();
-    const photo = one<{ mime: string; content: Uint8Array }>(
-      "SELECT mime,content FROM uploads WHERE id=? AND userId=?",
+    const photo = await one<{ mime: string; content: Uint8Array }>(
+      'SELECT mime,content FROM uploads WHERE id=? AND "userId"=?',
       text(imageId, "Photo ID"),
       userId,
     );

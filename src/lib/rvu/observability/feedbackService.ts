@@ -41,7 +41,7 @@ export async function submitRecoveryFeedback(
   }
 
   // Validate report exists and is RETURNED
-  const handover = one<{ state: string }>("SELECT state FROM handovers WHERE reportId=?", reportId);
+  const handover = await one<{ state: string }>('SELECT state FROM handovers WHERE "reportId"=?', reportId);
   if (!handover || handover.state !== "RETURNED") {
     throw new HttpError(400, "Feedback can only be submitted for completed returns.");
   }
@@ -54,8 +54,8 @@ export async function submitRecoveryFeedback(
   const feedbackId = id("fb");
   const ts = now();
 
-  run(
-    `INSERT INTO recovery_feedback (id, reportId, userId, actorRole, easyRating, confusionNote, createdAt)
+  await run(
+    `INSERT INTO recovery_feedback (id, "reportId", "userId", "actorRole", "easyRating", "confusionNote", "createdAt")
      VALUES (?, ?, ?, ?, ?, ?, ?)`,
     feedbackId,
     reportId,
@@ -78,12 +78,12 @@ export async function submitRecoveryFeedback(
 }
 
 export async function getFeedbackForReport(reportId: string): Promise<RecoveryFeedback[]> {
-  const rows = all<RawFeedbackRow>("SELECT * FROM recovery_feedback WHERE reportId=?", reportId);
+  const rows = await all<RawFeedbackRow>('SELECT * FROM recovery_feedback WHERE "reportId"=?', reportId);
   return rows.map(parseFeedbackRow);
 }
 
 export async function listFeedbackSummary() {
-  const rows = all<RawFeedbackRow>("SELECT * FROM recovery_feedback");
+  const rows = await all<RawFeedbackRow>("SELECT * FROM recovery_feedback");
   const total = rows.length;
   if (total === 0) {
     return {

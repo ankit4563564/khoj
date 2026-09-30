@@ -34,8 +34,8 @@ export async function generateOwnerItemEmbedding(
   options: GenerateEmbeddingOptions = {}
 ): Promise<FingerprintEmbeddingRecord> {
   // 1. Fetch item fingerprint
-  const rawRow = one<any>(
-    "SELECT * FROM item_fingerprints WHERE itemId=?",
+  const rawRow = await one<any>(
+    'SELECT * FROM item_fingerprints WHERE "itemId"=?',
     itemId
   );
 
@@ -108,8 +108,8 @@ export async function generateFoundReportEmbedding(
   options: GenerateEmbeddingOptions = {}
 ): Promise<FingerprintEmbeddingRecord> {
   // 1. Fetch found fingerprint
-  const rawRow = one<any>(
-    "SELECT * FROM found_fingerprints WHERE foundReportId=?",
+  const rawRow = await one<any>(
+    'SELECT * FROM found_fingerprints WHERE "foundReportId"=?',
     foundReportId
   );
 

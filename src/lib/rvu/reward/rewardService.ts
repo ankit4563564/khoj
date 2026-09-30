@@ -10,14 +10,12 @@
  * - Dual confirmation for reward: owner reports payment, finder confirms receipt.
  */
 
-import { one, run, notify, now, transaction } from "@/lib/rvu/db";
+import { one, run, notify, now } from "@/lib/rvu/db";
 import { HttpError } from "@/lib/rvu/auth";
-import type { Handover } from "@/lib/rvu/types";
 import { getRecoveryCaseByReportId } from "@/lib/rvu/recovery/recoveryRepository";
 import { resolveActorRole } from "@/lib/rvu/recovery/recoveryService";
 import type {
   ClientRewardView,
-  RewardActorRole,
   RewardRecord,
   RewardState,
 } from "./rewardTypes";
@@ -96,7 +94,7 @@ export async function getOrCreateReward(
     );
   }
 
-  const { role } = resolveActorRole(recovery, requestingUserId, actionToken);
+  const { role } = await resolveActorRole(recovery, requestingUserId, actionToken);
 
   let reward = await getRewardByReportId(reportId);
   if (!reward) {
@@ -141,7 +139,6 @@ export async function chooseRewardDecision(
 
   // Ignore or reject forged client amounts; amount is strictly server-controlled
   if (clientSuppliedAmount !== undefined && clientSuppliedAmount !== REWARD_CONFIG.THANK_YOU_AMOUNT_INR) {
-    // We enforce that client cannot alter reward amount
     console.warn(`Client attempted to pass tampered reward amount: ${clientSuppliedAmount}. Enforcing ₹20.`);
   }
 
@@ -159,8 +156,8 @@ export async function chooseRewardDecision(
   });
 
   // Sync legacy handovers table
-  run(
-    "UPDATE handovers SET rewardStatus = ? WHERE reportId = ?",
+  await run(
+    'UPDATE handovers SET "rewardStatus" = ? WHERE "reportId" = ?',
     decision === "SKIP" ? "skipped" : "offered",
     reportId
   );
@@ -177,14 +174,14 @@ export async function chooseRewardDecision(
   });
 
   if (decision === "THANK") {
-    notify(
+    await notify(
       reward.finderReference,
       "The owner chose to send a ₹20 thank-you. Please provide your UPI ID.",
       `/finder/cases/${reportId}`
     );
   } else {
     // Notify finder neutrally without social pressure or guilt
-    notify(
+    await notify(
       reward.finderReference,
       "Item return confirmed. Thank you for helping return this item.",
       `/status`
@@ -206,7 +203,7 @@ export async function provideFinderUpi(
   const recovery = await getRecoveryCaseByReportId(reportId);
   if (!recovery) throw new HttpError(404, "Recovery case not found.");
 
-  const { role } = resolveActorRole(recovery, actorUserId, actionToken);
+  const { role } = await resolveActorRole(recovery, actorUserId, actionToken);
   if (role !== "finder" && role !== "staff") {
     throw new HttpError(403, "Only the finder or authorized staff can provide a UPI address.");
   }
@@ -222,7 +219,7 @@ export async function provideFinderUpi(
   });
 
   // Sync legacy handovers table
-  run("UPDATE handovers SET finderUpi = ? WHERE reportId = ?", cleanUpi, reportId);
+  await run('UPDATE handovers SET "finderUpi" = ? WHERE "reportId" = ?', cleanUpi, reportId);
 
   await recordRewardEvent({
     rewardId: reward.id,
@@ -235,7 +232,7 @@ export async function provideFinderUpi(
     metadata: { upiSuffix: cleanUpi.slice(cleanUpi.indexOf("@")) },
   });
 
-  notify(
+  await notify(
     reward.ownerId,
     "Your finder shared their UPI ID for the ₹20 thank-you.",
     `/dashboard`
@@ -318,7 +315,7 @@ export async function reportOwnerPayment(
   });
 
   // Sync legacy handovers table
-  run("UPDATE handovers SET rewardStatus = 'sent_unverified' WHERE reportId = ?", reportId);
+  await run('UPDATE handovers SET "rewardStatus" = \'sent_unverified\' WHERE "reportId" = ?', reportId);
 
   await recordRewardEvent({
     rewardId: reward.id,
@@ -331,7 +328,7 @@ export async function reportOwnerPayment(
     metadata: { timestamp: ts },
   });
 
-  notify(
+  await notify(
     reward.finderReference,
     "The owner reports sending the ₹20 thank-you. Please confirm once received.",
     `/finder/cases/${reportId}`
@@ -353,7 +350,7 @@ export async function confirmFinderPayment(
   const recovery = await getRecoveryCaseByReportId(reportId);
   if (!recovery) throw new HttpError(404, "Recovery case not found.");
 
-  const { role } = resolveActorRole(recovery, actorUserId, actionToken);
+  const { role } = await resolveActorRole(recovery, actorUserId, actionToken);
   if (role !== "finder" && role !== "staff") {
     throw new HttpError(403, "Only the finder or staff can confirm receiving payment.");
   }
@@ -361,12 +358,7 @@ export async function confirmFinderPayment(
   const reward = await getRewardByReportId(reportId);
   if (!reward) throw new HttpError(404, "Reward record not found.");
 
-  // Section 41 & 42:
-  // Finder selects: "I RECEIVED ₹20"
-  // reward_state = COMPLETED ONLY when owner payment report already exists.
-  // If owner hasn't reported payment, finder cannot falsely transition state to COMPLETED.
   if (!reward.ownerPaymentReportedAt) {
-    // Record finder payment confirmation timestamp, but state remains UPI_PROVIDED / cannot become COMPLETED
     const ts = now();
     const updated = await updateRewardRecord(reportId, {
       finderPaymentConfirmedAt: reward.finderPaymentConfirmedAt || ts,
@@ -399,12 +391,12 @@ export async function confirmFinderPayment(
     metadata: { timestamp: ts },
   });
 
-  notify(
+  await notify(
     reward.ownerId,
     "Thank-you payment confirmed by finder. Thank you for your generosity!",
     `/status`
   );
-  notify(
+  await notify(
     reward.finderReference,
     "Thank-you payment confirmed. Thank you for helping return this item.",
     `/status`
@@ -426,7 +418,7 @@ export async function reportRewardDispute(
   const recovery = await getRecoveryCaseByReportId(reportId);
   if (!recovery) throw new HttpError(404, "Recovery case not found.");
 
-  const { role } = resolveActorRole(recovery, actorUserId, actionToken);
+  const { role } = await resolveActorRole(recovery, actorUserId, actionToken);
   const reward = await getRewardByReportId(reportId);
   if (!reward) throw new HttpError(404, "Reward record not found.");
 
@@ -464,7 +456,7 @@ export async function cancelReward(
   const recovery = await getRecoveryCaseByReportId(reportId);
   if (!recovery) throw new HttpError(404, "Recovery case not found.");
 
-  const { role } = resolveActorRole(recovery, actorUserId, actionToken);
+  const { role } = await resolveActorRole(recovery, actorUserId, actionToken);
   const reward = await getRewardByReportId(reportId);
   if (!reward) throw new HttpError(404, "Reward record not found.");
 
@@ -531,7 +523,7 @@ export async function adminResolveReward(
 ): Promise<RewardRecord> {
   if (!staffUserId) throw new HttpError(401, "Staff authentication required.");
 
-  const staff = one<{ id: string; role: string }>("SELECT id, role FROM users WHERE id=?", staffUserId);
+  const staff = await one<{ id: string; role: string }>("SELECT id, role FROM users WHERE id=?", staffUserId);
   if (staff?.role !== "staff") {
     throw new HttpError(403, "Staff privileges required to resolve reward disputes.");
   }

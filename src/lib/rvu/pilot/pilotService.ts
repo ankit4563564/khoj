@@ -1,29 +1,24 @@
 /**
- * KHOJ — Phase 11: Real RVU Controlled Pilot Service
- * Ground truth recording, incident triage, and operational metrics calculation.
+ * KHOJ — Phase 11: Controlled RVU Pilot & Comparative Validation Service
+ * Manages ground-truth logging, real pilot evaluation, incident triage, and simulated-vs-real comparison.
  */
 
 import { randomUUID } from "node:crypto";
-import { run, one, all } from "../db";
-import { HttpError } from "../auth";
+import { one, all, run, now } from "@/lib/rvu/db";
+import { HttpError } from "@/lib/rvu/auth";
 import type {
   PilotGroundTruth,
   PilotIncident,
+  PilotEvaluationMetrics,
   PilotCaseClassification,
   PilotFailureStage,
-  PilotEvaluationMetrics,
-  MetricComparisonRow,
-  IncidentType,
   IncidentSeverity,
+  IncidentType,
+  MetricComparisonRow,
 } from "./pilotTypes";
 
-function now(): string {
-  return new Date().toISOString();
-}
-
 /**
- * Record or update independent ground truth for a real pilot found case.
- * Invariant: Must be recorded independently, without post-hoc rationalization.
+ * Ground Truth Management
  */
 export async function recordPilotGroundTruth(params: {
   reportId: string;
@@ -38,16 +33,16 @@ export async function recordPilotGroundTruth(params: {
   failureStage: PilotFailureStage;
   notes?: string;
 }): Promise<PilotGroundTruth> {
-  const existing = one<any>("SELECT id FROM pilot_ground_truth WHERE reportId = ?", params.reportId);
+  const existing = await one<any>('SELECT id FROM pilot_ground_truth WHERE "reportId" = ?', params.reportId);
   const ts = now();
 
   if (existing) {
-    run(
+    await run(
       `UPDATE pilot_ground_truth
-       SET trueOwnerId = ?, trueItemId = ?, hasRealMatch = ?, candidateRank = ?,
-           verificationResult = ?, handoverResult = ?, returnedResult = ?,
-           caseClassification = ?, failureStage = ?, notes = ?, updatedAt = ?
-       WHERE reportId = ?`,
+       SET "trueOwnerId" = ?, "trueItemId" = ?, "hasRealMatch" = ?, "candidateRank" = ?,
+           "verificationResult" = ?, "handoverResult" = ?, "returnedResult" = ?,
+           "caseClassification" = ?, "failureStage" = ?, notes = ?, "updatedAt" = ?
+       WHERE "reportId" = ?`,
       params.trueOwnerId || null,
       params.trueItemId || null,
       params.hasRealMatch ? 1 : 0,
@@ -63,11 +58,11 @@ export async function recordPilotGroundTruth(params: {
     );
   } else {
     const id = `pgt-${randomUUID()}`;
-    run(
+    await run(
       `INSERT INTO pilot_ground_truth
-       (id, reportId, trueOwnerId, trueItemId, hasRealMatch, candidateRank,
-        verificationResult, handoverResult, returnedResult, caseClassification,
-        failureStage, notes, createdAt, updatedAt)
+       (id, "reportId", "trueOwnerId", "trueItemId", "hasRealMatch", "candidateRank",
+        "verificationResult", "handoverResult", "returnedResult", "caseClassification",
+        "failureStage", notes, "createdAt", "updatedAt")
        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       id,
       params.reportId,
@@ -92,7 +87,7 @@ export async function recordPilotGroundTruth(params: {
 }
 
 export async function getPilotGroundTruthByReportId(reportId: string): Promise<PilotGroundTruth | null> {
-  const row = one<any>("SELECT * FROM pilot_ground_truth WHERE reportId = ?", reportId);
+  const row = await one<any>('SELECT * FROM pilot_ground_truth WHERE "reportId" = ?', reportId);
   if (!row) return null;
   return {
     id: row.id,
@@ -113,7 +108,7 @@ export async function getPilotGroundTruthByReportId(reportId: string): Promise<P
 }
 
 export async function listPilotGroundTruth(): Promise<PilotGroundTruth[]> {
-  const rows = all<any>("SELECT * FROM pilot_ground_truth ORDER BY createdAt ASC");
+  const rows = await all<any>('SELECT * FROM pilot_ground_truth ORDER BY "createdAt" ASC');
   return rows.map((row) => ({
     id: row.id,
     reportId: row.reportId,
@@ -144,9 +139,9 @@ export async function recordPilotIncident(params: {
 }): Promise<PilotIncident> {
   const id = `inc-${randomUUID()}`;
   const ts = now();
-  run(
+  await run(
     `INSERT INTO pilot_incidents
-     (id, reportId, incidentType, severity, reportedBy, details, status, createdAt)
+     (id, "reportId", "incidentType", severity, "reportedBy", details, status, "createdAt")
      VALUES (?, ?, ?, ?, ?, ?, 'open', ?)`,
     id,
     params.reportId || null,
@@ -178,9 +173,9 @@ export async function resolvePilotIncident(
   resolutionNotes: string
 ): Promise<PilotIncident> {
   const ts = now();
-  run(
+  await run(
     `UPDATE pilot_incidents
-     SET status = 'resolved', resolutionNotes = ?, resolvedBy = ?, resolvedAt = ?
+     SET status = 'resolved', "resolutionNotes" = ?, "resolvedBy" = ?, "resolvedAt" = ?
      WHERE id = ?`,
     resolutionNotes,
     staffUserId,
@@ -188,7 +183,7 @@ export async function resolvePilotIncident(
     incidentId
   );
 
-  const row = one<any>("SELECT * FROM pilot_incidents WHERE id = ?", incidentId);
+  const row = await one<any>("SELECT * FROM pilot_incidents WHERE id = ?", incidentId);
   if (!row) throw new HttpError(404, "Incident record not found");
   return {
     id: row.id,
@@ -206,7 +201,7 @@ export async function resolvePilotIncident(
 }
 
 export async function listPilotIncidents(): Promise<PilotIncident[]> {
-  const rows = all<any>("SELECT * FROM pilot_incidents ORDER BY createdAt DESC");
+  const rows = await all<any>('SELECT * FROM pilot_incidents ORDER BY "createdAt" DESC');
   return rows.map((row) => ({
     id: row.id,
     reportId: row.reportId ?? null,
@@ -232,10 +227,16 @@ export async function computeRealPilotMetrics(options?: {
 }): Promise<PilotEvaluationMetrics> {
   const gtCases = await listPilotGroundTruth();
 
-  const totalParticipants = options?.totalParticipants ?? (one<any>("SELECT COUNT(*) as c FROM users WHERE role = 'student'")?.c || 50);
-  const totalItemsRegistered = options?.totalItemsRegistered ?? (one<any>("SELECT COUNT(*) as c FROM protected_items")?.c || 180);
+  const userCountRow = await one<any>("SELECT COUNT(*) as c FROM users WHERE role = 'student'");
+  const totalParticipants = options?.totalParticipants ?? (Number(userCountRow?.c) || 50);
+
+  const itemsCountRow = await one<any>("SELECT COUNT(*) as c FROM protected_items");
+  const totalItemsRegistered = options?.totalItemsRegistered ?? (Number(itemsCountRow?.c) || 180);
+
   const totalFoundReports = gtCases.length;
-  const totalLostReports = options?.totalLostReports ?? (one<any>("SELECT COUNT(*) as c FROM reports WHERE kind = 'lost'")?.c || 45);
+
+  const lostCountRow = await one<any>("SELECT COUNT(*) as c FROM reports WHERE kind = 'lost'");
+  const totalLostReports = options?.totalLostReports ?? (Number(lostCountRow?.c) || 45);
 
   const eligibleMatchCases = gtCases.filter((g) => g.hasRealMatch);
   const noMatchCases = gtCases.filter((g) => !g.hasRealMatch);

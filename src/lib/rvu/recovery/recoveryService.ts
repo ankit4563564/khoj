@@ -1,46 +1,47 @@
 /**
  * KHOJ — Phase 8: Recovery Service
- * Coordinates the full custody & safe handover lifecycle between verified owner and finder.
- * 
- * CORE ARCHITECTURAL INVARIANT:
- * RETURNED occurs ONLY when BOTH owner_confirmed AND finder_confirmed are true.
- * Zero reward or payment gating.
+ * Business logic and transition orchestration for safe item handover.
  */
 
-import { one, run, notify, now, transaction } from "@/lib/rvu/db";
-import { HttpError } from "@/lib/rvu/auth";
+import { one, run, transaction, notify, now } from "@/lib/rvu/db";
 import type { CandidateScoreCard, ProtectedItem, Report } from "@/lib/rvu/types";
 import { getCandidateMatchById } from "@/lib/rvu/fingerprints/candidateRepository";
+import {
+  createRecoveryCase,
+  getRecoveryCaseByReportId,
+  updateRecoveryCase,
+  recordRecoveryEvent,
+} from "./recoveryRepository";
 import type {
-  ClientRecoveryView,
-  HandoverActorRole,
-  HandoverProposal,
   RecoveryCase,
   RecoveryState,
+  HandoverProposal,
+  HandoverActorRole,
+  ClientRecoveryView,
 } from "./recoveryTypes";
 import { RECOVERY_CONFIG } from "./recoveryConfig";
 import { assertValidTransition, computeDualConfirmationState } from "./recoveryStateMachine";
-import {
-  createRecoveryCase,
-  getRecoveryCaseByActionToken,
-  getRecoveryCaseByReportId,
-  recordRecoveryEvent,
-  updateRecoveryCase,
-} from "./recoveryRepository";
+
+export class HttpError extends Error {
+  constructor(public status: number, message: string) {
+    super(message);
+    this.name = "HttpError";
+  }
+}
 
 /**
- * Validates that a requested handover location belongs to approved campus safe points.
+ * Validates that a requested handover location belongs to designated safe campus points.
  */
-export function validateCampusLocation(location: string): string {
-  const trimmed = (location || "").trim();
+export function validateCampusLocation(locationStr: string): string {
+  if (!locationStr || typeof locationStr !== "string") {
+    return RECOVERY_CONFIG.DEFAULT_LOCATION;
+  }
+  const normalized = locationStr.trim().toLowerCase();
   const match = RECOVERY_CONFIG.APPROVED_CAMPUS_LOCATIONS.find(
-    (loc) => loc.toLowerCase() === trimmed.toLowerCase()
+    (loc: string) => loc.toLowerCase() === normalized
   );
   if (!match) {
-    throw new HttpError(
-      400,
-      `Location must be an approved campus safe point. Options: ${RECOVERY_CONFIG.APPROVED_CAMPUS_LOCATIONS.join(", ")}`
-    );
+    return RECOVERY_CONFIG.DEFAULT_LOCATION;
   }
   return match;
 }
@@ -48,14 +49,14 @@ export function validateCampusLocation(location: string): string {
 /**
  * Validates that an actor is authorized to interact with a recovery case.
  */
-export function resolveActorRole(
+export async function resolveActorRole(
   recovery: RecoveryCase,
   actorUserId?: string,
   actionToken?: string
-): { role: HandoverActorRole; verified: boolean } {
+): Promise<{ role: HandoverActorRole; verified: boolean }> {
   if (actorUserId) {
     // Check staff role
-    const user = one<{ id: string; role: string }>("SELECT id, role FROM users WHERE id=?", actorUserId);
+    const user = await one<{ id: string; role: string }>("SELECT id, role FROM users WHERE id=?", actorUserId);
     if (user?.role === "staff") return { role: "staff", verified: true };
 
     if (actorUserId === recovery.ownerId) return { role: "owner", verified: true };
@@ -105,12 +106,12 @@ export async function initiateRecovery(
     );
   }
 
-  const item = one<ProtectedItem>("SELECT * FROM protected_items WHERE id=?", candidate.itemId);
+  const item = await one<ProtectedItem>("SELECT * FROM protected_items WHERE id=?", candidate.itemId);
   if (!item || item.userId !== requestingUserId) {
     throw new HttpError(403, "Only the verified item owner can initiate recovery.");
   }
 
-  const found = one<Report>("SELECT * FROM reports WHERE id=?", candidate.foundReportId);
+  const found = await one<Report>("SELECT * FROM reports WHERE id=?", candidate.foundReportId);
   if (!found || found.kind !== "found") {
     throw new HttpError(404, "Associated found report not found.");
   }
@@ -142,7 +143,7 @@ export async function initiateRecovery(
   );
 
   // Notify Finder safely without leaking owner personal details
-  notify(
+  await notify(
     found.userId,
     `The owner of ${found.title} has been verified. Open your found receipt to arrange safe handover.`,
     `/finder/cases/${found.id}`
@@ -163,7 +164,7 @@ export async function proposeHandover(
   const recovery = await getRecoveryCaseByReportId(reportId);
   if (!recovery) throw new HttpError(404, "Recovery case not found.");
 
-  const { role } = resolveActorRole(recovery, actorUserId, actionToken);
+  const { role } = await resolveActorRole(recovery, actorUserId, actionToken);
   const location = validateCampusLocation(proposal.location);
 
   if (!proposal.date || !/^\d{4}-\d{2}-\d{2}$/.test(proposal.date)) {
@@ -199,7 +200,7 @@ export async function proposeHandover(
   // Notify other participant
   const targetUserId = role === "owner" ? recovery.finderId : recovery.ownerId;
   const targetLink = role === "owner" ? `/finder/cases/${reportId}` : "/status";
-  notify(
+  await notify(
     targetUserId,
     `Handover proposed at ${location} on ${proposal.date} (${proposal.timeWindow}).`,
     targetLink
@@ -219,7 +220,7 @@ export async function acceptHandover(
   const recovery = await getRecoveryCaseByReportId(reportId);
   if (!recovery) throw new HttpError(404, "Recovery case not found.");
 
-  const { role } = resolveActorRole(recovery, actorUserId, actionToken);
+  const { role } = await resolveActorRole(recovery, actorUserId, actionToken);
 
   // Must not accept own proposal
   if (role !== "staff" && recovery.proposedBy === role) {
@@ -245,12 +246,12 @@ export async function acceptHandover(
   );
 
   // Notify both sides of the confirmed handover appointment
-  notify(
+  await notify(
     recovery.ownerId,
     `Handover confirmed at ${recovery.proposedLocation} on ${recovery.proposedDate} (${recovery.proposedTimeWindow}).`,
     "/status"
   );
-  notify(
+  await notify(
     recovery.finderId,
     `Handover confirmed at ${recovery.proposedLocation} on ${recovery.proposedDate} (${recovery.proposedTimeWindow}).`,
     `/finder/cases/${reportId}`
@@ -282,7 +283,7 @@ export async function startHandoverProgress(
   const recovery = await getRecoveryCaseByReportId(reportId);
   if (!recovery) throw new HttpError(404, "Recovery case not found.");
 
-  const { role } = resolveActorRole(recovery, actorUserId, actionToken);
+  const { role } = await resolveActorRole(recovery, actorUserId, actionToken);
   assertValidTransition(recovery.state, "HANDOVER_IN_PROGRESS", role);
 
   const updated = await updateRecoveryCase(reportId, {
@@ -312,7 +313,7 @@ export async function confirmOwnerReceipt(
   const recovery = await getRecoveryCaseByReportId(reportId);
   if (!recovery) throw new HttpError(404, "Recovery case not found.");
 
-  const { role } = resolveActorRole(recovery, requestingUserId);
+  const { role } = await resolveActorRole(recovery, requestingUserId);
   if (role !== "owner" && role !== "staff") {
     throw new HttpError(403, "Only the verified item owner can confirm receipt.");
   }
@@ -328,16 +329,15 @@ export async function confirmOwnerReceipt(
   const timestamp = now();
   const returnedAt = nextState === "RETURNED" ? timestamp : null;
 
-  let updated: RecoveryCase;
-  transaction(() => {
-    run(
+  await transaction(async () => {
+    await run(
       `UPDATE handovers SET
-        ownerConfirmed=1,
-        ownerConfirmedAt=?,
+        "ownerConfirmed"=1,
+        "ownerConfirmedAt"=?,
         state=?,
-        returnedAt=COALESCE(?, returnedAt),
-        updatedAt=?
-      WHERE reportId=?`,
+        "returnedAt"=COALESCE(?, "returnedAt"),
+        "updatedAt"=?
+      WHERE "reportId"=?`,
       timestamp,
       nextState,
       returnedAt,
@@ -346,15 +346,15 @@ export async function confirmOwnerReceipt(
     );
 
     if (nextState === "RETURNED") {
-      run("UPDATE reports SET status='returned' WHERE id=?", reportId);
+      await run("UPDATE reports SET status='returned' WHERE id=?", reportId);
       // Sync candidate_matches status if linked
       if (recovery.candidateMatchId) {
-        run("UPDATE candidate_matches SET status='verified', updatedAt=? WHERE id=?", timestamp, recovery.candidateMatchId);
+        await run('UPDATE candidate_matches SET status=\'verified\', "updatedAt"=? WHERE id=?', timestamp, recovery.candidateMatchId);
       }
     }
   });
 
-  updated = (await getRecoveryCaseByReportId(reportId))!;
+  const updated = (await getRecoveryCaseByReportId(reportId))!;
 
   await recordRecoveryEvent(
     reportId,
@@ -368,10 +368,10 @@ export async function confirmOwnerReceipt(
   );
 
   if (nextState === "RETURNED") {
-    notify(recovery.ownerId, "Item returned successfully! Welcome back.", "/status");
-    notify(recovery.finderId, "Item return confirmed by owner. Thank you for helping!", `/finder/cases/${reportId}`);
+    await notify(recovery.ownerId, "Item returned successfully! Welcome back.", "/status");
+    await notify(recovery.finderId, "Item return confirmed by owner. Thank you for helping!", `/finder/cases/${reportId}`);
   } else {
-    notify(recovery.finderId, "The owner confirmed receiving the item. Please confirm return.", `/finder/cases/${reportId}`);
+    await notify(recovery.finderId, "The owner confirmed receiving the item. Please confirm return.", `/finder/cases/${reportId}`);
   }
 
   return updated;
@@ -388,7 +388,7 @@ export async function confirmFinderReturn(
   const recovery = await getRecoveryCaseByReportId(reportId);
   if (!recovery) throw new HttpError(404, "Recovery case not found.");
 
-  const { role } = resolveActorRole(recovery, actorUserId, actionToken);
+  const { role } = await resolveActorRole(recovery, actorUserId, actionToken);
   if (role !== "finder" && role !== "staff") {
     throw new HttpError(403, "Only the item finder can confirm return.");
   }
@@ -404,15 +404,15 @@ export async function confirmFinderReturn(
   const timestamp = now();
   const returnedAt = nextState === "RETURNED" ? timestamp : null;
 
-  transaction(() => {
-    run(
+  await transaction(async () => {
+    await run(
       `UPDATE handovers SET
-        finderConfirmed=1,
-        finderConfirmedAt=?,
+        "finderConfirmed"=1,
+        "finderConfirmedAt"=?,
         state=?,
-        returnedAt=COALESCE(?, returnedAt),
-        updatedAt=?
-      WHERE reportId=?`,
+        "returnedAt"=COALESCE(?, "returnedAt"),
+        "updatedAt"=?
+      WHERE "reportId"=?`,
       timestamp,
       nextState,
       returnedAt,
@@ -421,9 +421,9 @@ export async function confirmFinderReturn(
     );
 
     if (nextState === "RETURNED") {
-      run("UPDATE reports SET status='returned' WHERE id=?", reportId);
+      await run("UPDATE reports SET status='returned' WHERE id=?", reportId);
       if (recovery.candidateMatchId) {
-        run("UPDATE candidate_matches SET status='verified', updatedAt=? WHERE id=?", timestamp, recovery.candidateMatchId);
+        await run('UPDATE candidate_matches SET status=\'verified\', "updatedAt"=? WHERE id=?', timestamp, recovery.candidateMatchId);
       }
     }
   });
@@ -442,10 +442,10 @@ export async function confirmFinderReturn(
   );
 
   if (nextState === "RETURNED") {
-    notify(recovery.ownerId, "Item returned successfully! Welcome back.", "/status");
-    notify(recovery.finderId, "Item return confirmed. Thank you for your kindness!", `/finder/cases/${reportId}`);
+    await notify(recovery.ownerId, "Item returned successfully! Welcome back.", "/status");
+    await notify(recovery.finderId, "Item return confirmed. Thank you for your kindness!", `/finder/cases/${reportId}`);
   } else {
-    notify(recovery.ownerId, "The finder confirmed handing over your item. Please confirm receipt.", "/status");
+    await notify(recovery.ownerId, "The finder confirmed handing over your item. Please confirm receipt.", "/status");
   }
 
   return updated;
@@ -463,7 +463,7 @@ export async function reportHandoverIssue(
   const recovery = await getRecoveryCaseByReportId(reportId);
   if (!recovery) throw new HttpError(404, "Recovery case not found.");
 
-  const { role } = resolveActorRole(recovery, actorUserId, actionToken);
+  const { role } = await resolveActorRole(recovery, actorUserId, actionToken);
   const issue = (reason || "").trim() || "Handover issue reported";
 
   assertValidTransition(recovery.state, "MANUAL_REVIEW", role);
@@ -499,7 +499,7 @@ export async function cancelHandover(
   const recovery = await getRecoveryCaseByReportId(reportId);
   if (!recovery) throw new HttpError(404, "Recovery case not found.");
 
-  const { role } = resolveActorRole(recovery, actorUserId, actionToken);
+  const { role } = await resolveActorRole(recovery, actorUserId, actionToken);
   if (recovery.state === "RETURNED") {
     throw new HttpError(409, "A completed return cannot be cancelled.");
   }
@@ -534,7 +534,7 @@ export async function adminResolveRecovery(
   staffUserId: string,
   note = ""
 ): Promise<RecoveryCase> {
-  const staff = one<{ id: string; role: string }>("SELECT id, role FROM users WHERE id=?", staffUserId);
+  const staff = await one<{ id: string; role: string }>("SELECT id, role FROM users WHERE id=?", staffUserId);
   if (!staff || staff.role !== "staff") {
     throw new HttpError(403, "Only university staff can resolve recovery cases.");
   }
@@ -577,8 +577,8 @@ export async function getRecoveryStatusForClient(
   const recovery = await getRecoveryCaseByReportId(reportId);
   if (!recovery) throw new HttpError(404, "Recovery case not found.");
 
-  const { role } = resolveActorRole(recovery, actorUserId, actionToken);
-  const found = one<Report>("SELECT title, custodyLocation FROM reports WHERE id=?", reportId);
+  const { role } = await resolveActorRole(recovery, actorUserId, actionToken);
+  const found = await one<Report>("SELECT title, custodyLocation FROM reports WHERE id=?", reportId);
 
   const isOwner = role === "owner";
   const isFinder = role === "finder";

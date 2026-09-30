@@ -66,7 +66,7 @@ export async function extractAndSaveFoundFingerprint(
     imageToAnalyze = input.customImage;
   } else if (input.imageId && typeof input.imageId === "string") {
     try {
-      const row = one<{ mime: string; content: Uint8Array }>(
+      const row = await one<{ mime: string; content: Uint8Array }>(
         "SELECT mime, content FROM uploads WHERE id=?",
         input.imageId
       );

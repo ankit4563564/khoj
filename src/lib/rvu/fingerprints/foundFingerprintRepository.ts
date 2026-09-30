@@ -70,7 +70,7 @@ export async function createFoundFingerprint(
   const validated = validateFoundFingerprintInput(input);
 
   // Verify associated report exists and is a 'found' report
-  const report = one<Report>("SELECT * FROM reports WHERE id=?", validated.foundReportId);
+  const report = await one<Report>("SELECT * FROM reports WHERE id=?", validated.foundReportId);
   if (!report) {
     throw new ValidationError(`Associated report #${validated.foundReportId} does not exist.`);
   }
@@ -86,33 +86,33 @@ export async function createFoundFingerprint(
   const fingerprintId = input.id ? validateId(input.id, "id") : `fp-found-${id("").slice(0, 16)}`;
   const timestamp = now();
 
-  transaction(() => {
-    run(
+  await transaction(async () => {
+    await run(
       `INSERT INTO found_fingerprints (
-        id, foundReportId, category, subcategory, brand, model, color, material,
-        visibleText, logos, accessories, distinctiveFeatures, condition,
-        visualDescription, foundLocation, foundAt, imageReference,
-        imageEmbeddingReference, metadata, createdAt, updatedAt
+        id, "foundReportId", category, subcategory, brand, model, color, material,
+        "visibleText", logos, accessories, "distinctiveFeatures", condition,
+        "visualDescription", "foundLocation", "foundAt", "imageReference",
+        "imageEmbeddingReference", metadata, "createdAt", "updatedAt"
       ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
-      ON CONFLICT(foundReportId) DO UPDATE SET
+      ON CONFLICT("foundReportId") DO UPDATE SET
         category=excluded.category,
         subcategory=excluded.subcategory,
         brand=excluded.brand,
         model=excluded.model,
         color=excluded.color,
         material=excluded.material,
-        visibleText=excluded.visibleText,
+        "visibleText"=excluded."visibleText",
         logos=excluded.logos,
         accessories=excluded.accessories,
-        distinctiveFeatures=excluded.distinctiveFeatures,
+        "distinctiveFeatures"=excluded."distinctiveFeatures",
         condition=excluded.condition,
-        visualDescription=excluded.visualDescription,
-        foundLocation=excluded.foundLocation,
-        foundAt=excluded.foundAt,
-        imageReference=excluded.imageReference,
-        imageEmbeddingReference=excluded.imageEmbeddingReference,
+        "visualDescription"=excluded."visualDescription",
+        "foundLocation"=excluded."foundLocation",
+        "foundAt"=excluded."foundAt",
+        "imageReference"=excluded."imageReference",
+        "imageEmbeddingReference"=excluded."imageEmbeddingReference",
         metadata=excluded.metadata,
-        updatedAt=excluded.updatedAt`,
+        "updatedAt"=excluded."updatedAt"`,
       fingerprintId,
       validated.foundReportId,
       validated.category,
@@ -137,8 +137,8 @@ export async function createFoundFingerprint(
     );
   });
 
-  const saved = one<RawFoundFingerprintRow>(
-    "SELECT * FROM found_fingerprints WHERE foundReportId=?",
+  const saved = await one<RawFoundFingerprintRow>(
+    'SELECT * FROM found_fingerprints WHERE "foundReportId"=?',
     validated.foundReportId
   );
 
@@ -158,8 +158,8 @@ export async function getFoundFingerprintByReportId(
   isStaffOrSystem = false
 ): Promise<FoundFingerprint | null> {
   const safeReportId = validateId(foundReportId, "foundReportId");
-  const row = one<RawFoundFingerprintRow>(
-    "SELECT * FROM found_fingerprints WHERE foundReportId=?",
+  const row = await one<RawFoundFingerprintRow>(
+    'SELECT * FROM found_fingerprints WHERE "foundReportId"=?',
     safeReportId
   );
   return row ? parseRow(row) : null;
@@ -174,7 +174,7 @@ export async function getFoundFingerprintById(
   isStaffOrSystem = false
 ): Promise<FoundFingerprint | null> {
   const safeId = validateId(idStr, "fingerprint ID");
-  const row = one<RawFoundFingerprintRow>(
+  const row = await one<RawFoundFingerprintRow>(
     "SELECT * FROM found_fingerprints WHERE id=?",
     safeId
   );

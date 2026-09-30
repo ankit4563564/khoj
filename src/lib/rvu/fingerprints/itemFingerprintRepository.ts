@@ -79,7 +79,7 @@ export async function createItemFingerprint(
   const validated = validateItemFingerprintInput(input);
 
   // Security Check: Verify item existence and ownership
-  const protectedItem = one<ProtectedItem>(
+  const protectedItem = await one<ProtectedItem>(
     "SELECT * FROM protected_items WHERE id=?",
     validated.itemId
   );
@@ -95,34 +95,34 @@ export async function createItemFingerprint(
   const fingerprintId = input.id ? validateId(input.id, "id") : `fp-item-${id("").slice(0, 16)}`;
   const timestamp = now();
 
-  transaction(() => {
+  await transaction(async () => {
     // Upsert fingerprint
-    run(
+    await run(
       `INSERT INTO item_fingerprints (
-        id, itemId, category, subcategory, brand, model, color, material,
-        visibleText, logos, accessories, distinctiveFeatures, condition,
-        ownerDescription, normalizedDescription, metadata, imageReference,
-        textEmbeddingReference, imageEmbeddingReference, createdAt, updatedAt
+        id, "itemId", category, subcategory, brand, model, color, material,
+        "visibleText", logos, accessories, "distinctiveFeatures", condition,
+        "ownerDescription", "normalizedDescription", metadata, "imageReference",
+        "textEmbeddingReference", "imageEmbeddingReference", "createdAt", "updatedAt"
       ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
-      ON CONFLICT(itemId) DO UPDATE SET
+      ON CONFLICT("itemId") DO UPDATE SET
         category=excluded.category,
         subcategory=excluded.subcategory,
         brand=excluded.brand,
         model=excluded.model,
         color=excluded.color,
         material=excluded.material,
-        visibleText=excluded.visibleText,
+        "visibleText"=excluded."visibleText",
         logos=excluded.logos,
         accessories=excluded.accessories,
-        distinctiveFeatures=excluded.distinctiveFeatures,
+        "distinctiveFeatures"=excluded."distinctiveFeatures",
         condition=excluded.condition,
-        ownerDescription=excluded.ownerDescription,
-        normalizedDescription=excluded.normalizedDescription,
+        "ownerDescription"=excluded."ownerDescription",
+        "normalizedDescription"=excluded."normalizedDescription",
         metadata=excluded.metadata,
-        imageReference=excluded.imageReference,
-        textEmbeddingReference=excluded.textEmbeddingReference,
-        imageEmbeddingReference=excluded.imageEmbeddingReference,
-        updatedAt=excluded.updatedAt`,
+        "imageReference"=excluded."imageReference",
+        "textEmbeddingReference"=excluded."textEmbeddingReference",
+        "imageEmbeddingReference"=excluded."imageEmbeddingReference",
+        "updatedAt"=excluded."updatedAt"`,
       fingerprintId,
       validated.itemId,
       validated.category,
@@ -147,8 +147,8 @@ export async function createItemFingerprint(
     );
   });
 
-  const saved = one<RawItemFingerprintRow>(
-    "SELECT * FROM item_fingerprints WHERE itemId=?",
+  const saved = await one<RawItemFingerprintRow>(
+    'SELECT * FROM item_fingerprints WHERE "itemId"=?',
     validated.itemId
   );
 
@@ -175,14 +175,14 @@ export async function getItemFingerprintByItemId(
     if (!requestingUserId) {
       throw new AuthorizationError("Authentication required to inspect private item fingerprint.");
     }
-    const item = one<ProtectedItem>("SELECT userId FROM protected_items WHERE id=?", safeItemId);
+    const item = await one<ProtectedItem>('SELECT "userId" FROM protected_items WHERE id=?', safeItemId);
     if (!item || item.userId !== requestingUserId) {
       throw new AuthorizationError("You do not have permission to view this item's fingerprint.");
     }
   }
 
-  const row = one<RawItemFingerprintRow>(
-    "SELECT * FROM item_fingerprints WHERE itemId=?",
+  const row = await one<RawItemFingerprintRow>(
+    'SELECT * FROM item_fingerprints WHERE "itemId"=?',
     safeItemId
   );
 
@@ -198,7 +198,7 @@ export async function getItemFingerprintById(
   isStaffOrSystem = false
 ): Promise<ItemFingerprint | null> {
   const safeId = validateId(idStr, "fingerprint ID");
-  const row = one<RawItemFingerprintRow>(
+  const row = await one<RawItemFingerprintRow>(
     "SELECT * FROM item_fingerprints WHERE id=?",
     safeId
   );
@@ -208,7 +208,7 @@ export async function getItemFingerprintById(
     if (!requestingUserId) {
       throw new AuthorizationError("Authentication required to inspect private item fingerprint.");
     }
-    const item = one<ProtectedItem>("SELECT userId FROM protected_items WHERE id=?", row.itemId);
+    const item = await one<ProtectedItem>('SELECT "userId" FROM protected_items WHERE id=?', row.itemId);
     if (!item || item.userId !== requestingUserId) {
       throw new AuthorizationError("You do not have permission to view this item's fingerprint.");
     }

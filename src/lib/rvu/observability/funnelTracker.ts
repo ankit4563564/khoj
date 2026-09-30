@@ -52,8 +52,8 @@ export async function recordPipelineStage(
   delete (safeMeta as any).token;
   delete (safeMeta as any).upi;
 
-  run(
-    `INSERT INTO pipeline_events (id, reportId, stage, status, stageDurationMs, metadata, createdAt)
+  await run(
+    `INSERT INTO pipeline_events (id, "reportId", stage, status, "stageDurationMs", metadata, "createdAt")
      VALUES (?, ?, ?, ?, ?, ?, ?)`,
     eventId,
     reportId,
@@ -79,8 +79,8 @@ export async function recordPipelineStage(
  * Retrieves all pipeline events for a specific found report.
  */
 export async function getPipelineEvents(reportId: string): Promise<PipelineEvent[]> {
-  const rows = all<RawPipelineRow>(
-    "SELECT * FROM pipeline_events WHERE reportId=? ORDER BY createdAt ASC",
+  const rows = await all<RawPipelineRow>(
+    'SELECT * FROM pipeline_events WHERE "reportId"=? ORDER BY "createdAt" ASC',
     reportId
   );
   return rows.map(parsePipelineRow);
@@ -91,45 +91,45 @@ export async function getPipelineEvents(reportId: string): Promise<PipelineEvent
  */
 export async function computeFunnelMetrics(): Promise<FunnelMetrics> {
   // Counts from database tables to calculate real-world funnel rates
-  const foundRow = one<{ count: number }>("SELECT count(*) as count FROM reports WHERE kind='found'");
-  const foundCount = foundRow?.count || 0;
+  const foundRow = await one<{ count: number }>("SELECT count(*) as count FROM reports WHERE kind='found'");
+  const foundCount = Number(foundRow?.count) || 0;
 
-  const fpRow = one<{ count: number }>("SELECT count(DISTINCT foundReportId) as count FROM found_fingerprints");
-  const fingerprintCount = fpRow?.count || 0;
+  const fpRow = await one<{ count: number }>('SELECT count(DISTINCT "foundReportId") as count FROM found_fingerprints');
+  const fingerprintCount = Number(fpRow?.count) || 0;
 
-  const candRow = one<{ count: number }>("SELECT count(DISTINCT foundReportId) as count FROM candidate_matches");
-  const candidateCount = candRow?.count || 0;
+  const candRow = await one<{ count: number }>('SELECT count(DISTINCT "foundReportId") as count FROM candidate_matches');
+  const candidateCount = Number(candRow?.count) || 0;
 
-  const verifStartRow = one<{ count: number }>("SELECT count(DISTINCT foundReportId) as count FROM verification_sessions");
-  const verificationStartedCount = verifStartRow?.count || 0;
+  const verifStartRow = await one<{ count: number }>('SELECT count(DISTINCT "foundReportId") as count FROM verification_sessions');
+  const verificationStartedCount = Number(verifStartRow?.count) || 0;
 
-  const verifiedRow = one<{ count: number }>(
-    "SELECT count(DISTINCT foundReportId) as count FROM verification_sessions WHERE state='VERIFIED'"
+  const verifiedRow = await one<{ count: number }>(
+    'SELECT count(DISTINCT "foundReportId") as count FROM verification_sessions WHERE state=\'VERIFIED\''
   );
-  const verifiedCount = verifiedRow?.count || 0;
+  const verifiedCount = Number(verifiedRow?.count) || 0;
 
-  const handoverRow = one<{ count: number }>("SELECT count(*) as count FROM handovers");
-  const handoverCount = handoverRow?.count || 0;
+  const handoverRow = await one<{ count: number }>("SELECT count(*) as count FROM handovers");
+  const handoverCount = Number(handoverRow?.count) || 0;
 
-  const returnedRow = one<{ count: number }>(
-    "SELECT count(*) as count FROM handovers WHERE state='RETURNED' AND ownerConfirmed=1 AND finderConfirmed=1"
+  const returnedRow = await one<{ count: number }>(
+    'SELECT count(*) as count FROM handovers WHERE state=\'RETURNED\' AND "ownerConfirmed"=1 AND "finderConfirmed"=1'
   );
-  const returnedCount = returnedRow?.count || 0;
+  const returnedCount = Number(returnedRow?.count) || 0;
 
-  const rewardOfferedRow = one<{ count: number }>(
+  const rewardOfferedRow = await one<{ count: number }>(
     "SELECT count(*) as count FROM rewards WHERE state != 'NOT_OFFERED'"
   );
-  const rewardOfferedCount = rewardOfferedRow?.count || 0;
+  const rewardOfferedCount = Number(rewardOfferedRow?.count) || 0;
 
-  const rewardCompRow = one<{ count: number }>(
+  const rewardCompRow = await one<{ count: number }>(
     "SELECT count(*) as count FROM rewards WHERE state='COMPLETED'"
   );
-  const rewardCompletedCount = rewardCompRow?.count || 0;
+  const rewardCompletedCount = Number(rewardCompRow?.count) || 0;
 
-  const rewardSkipRow = one<{ count: number }>(
+  const rewardSkipRow = await one<{ count: number }>(
     "SELECT count(*) as count FROM rewards WHERE state='SKIPPED'"
   );
-  const rewardSkippedCount = rewardSkipRow?.count || 0;
+  const rewardSkippedCount = Number(rewardSkipRow?.count) || 0;
 
   const safeRate = (num: number, den: number): number => {
     if (!den || den === 0) return 0;

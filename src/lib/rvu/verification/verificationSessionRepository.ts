@@ -3,10 +3,8 @@
  * Manages database persistence for blind verification sessions, audit logs, and status synchronization.
  */
 
-import { id, now, one, all, run, transaction } from "@/lib/rvu/db";
-import type { CandidateScoreCard, ProtectedItem, Report } from "@/lib/rvu/types";
+import { id, now, one, run, transaction } from "@/lib/rvu/db";
 import type {
-  VerificationAuditRecord,
   VerificationChallenge,
   VerificationSession,
   VerificationState,
@@ -76,13 +74,13 @@ export async function createSessionRecord(
   const currentTime = now();
   const expiresAt = new Date(Date.now() + expiryMs).toISOString();
 
-  transaction(() => {
-    run(
+  await transaction(async () => {
+    await run(
       `INSERT INTO verification_sessions (
-        id, candidateMatchId, itemId, foundReportId, claimantUserId,
-        state, challenges, activeChallengeIndex, attemptCount, maxAttempts,
-        verificationScore, verificationStrength, matchedEvidence, conflicts,
-        missingEvidence, algorithmVersion, expiresAt, createdAt, updatedAt
+        id, "candidateMatchId", "itemId", "foundReportId", "claimantUserId",
+        state, challenges, "activeChallengeIndex", "attemptCount", "maxAttempts",
+        "verificationScore", "verificationStrength", "matchedEvidence", conflicts,
+        "missingEvidence", "algorithmVersion", "expiresAt", "createdAt", "updatedAt"
       ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`,
       sessionId,
       candidateMatchId,
@@ -106,7 +104,7 @@ export async function createSessionRecord(
     );
   });
 
-  const row = one<RawVerificationSessionRow>("SELECT * FROM verification_sessions WHERE id=?", sessionId);
+  const row = await one<RawVerificationSessionRow>("SELECT * FROM verification_sessions WHERE id=?", sessionId);
   if (!row) throw new Error("Failed to create verification session record.");
   return parseSessionRow(row);
 }
@@ -115,7 +113,7 @@ export async function createSessionRecord(
  * Retrieves a verification session by primary key.
  */
 export async function getSessionById(sessionId: string): Promise<VerificationSession | null> {
-  const row = one<RawVerificationSessionRow>("SELECT * FROM verification_sessions WHERE id=?", sessionId);
+  const row = await one<RawVerificationSessionRow>("SELECT * FROM verification_sessions WHERE id=?", sessionId);
   return row ? parseSessionRow(row) : null;
 }
 
@@ -123,8 +121,8 @@ export async function getSessionById(sessionId: string): Promise<VerificationSes
  * Retrieves the latest active session for a given candidate match.
  */
 export async function getActiveSessionForCandidate(candidateMatchId: string): Promise<VerificationSession | null> {
-  const row = one<RawVerificationSessionRow>(
-    "SELECT * FROM verification_sessions WHERE candidateMatchId=? AND state IN ('PENDING_CHALLENGE', 'VERIFIED') ORDER BY createdAt DESC LIMIT 1",
+  const row = await one<RawVerificationSessionRow>(
+    'SELECT * FROM verification_sessions WHERE "candidateMatchId"=? AND state IN (\'PENDING_CHALLENGE\', \'VERIFIED\') ORDER BY "createdAt" DESC LIMIT 1',
     candidateMatchId
   );
   return row ? parseSessionRow(row) : null;
@@ -148,18 +146,18 @@ export async function updateSessionRecord(
 ): Promise<VerificationSession> {
   const currentTime = now();
 
-  transaction(() => {
-    run(
+  await transaction(async () => {
+    await run(
       `UPDATE verification_sessions SET
         state=?,
-        attemptCount=?,
-        verificationScore=?,
-        verificationStrength=?,
-        matchedEvidence=?,
+        "attemptCount"=?,
+        "verificationScore"=?,
+        "verificationStrength"=?,
+        "matchedEvidence"=?,
         conflicts=?,
-        missingEvidence=?,
-        activeChallengeIndex=COALESCE(?, activeChallengeIndex),
-        updatedAt=?
+        "missingEvidence"=?,
+        "activeChallengeIndex"=COALESCE(?, "activeChallengeIndex"),
+        "updatedAt"=?
       WHERE id=?`,
       updates.state,
       updates.attemptCount,
@@ -174,7 +172,7 @@ export async function updateSessionRecord(
     );
   });
 
-  const row = one<RawVerificationSessionRow>("SELECT * FROM verification_sessions WHERE id=?", sessionId);
+  const row = await one<RawVerificationSessionRow>("SELECT * FROM verification_sessions WHERE id=?", sessionId);
   if (!row) throw new Error(`Verification session #${sessionId} not found.`);
   return parseSessionRow(row);
 }
@@ -195,13 +193,13 @@ export async function recordAuditAndEvidence(
   const currentTime = now();
   const isAccepted = state === "VERIFIED" ? 1 : 0;
 
-  transaction(() => {
+  await transaction(async () => {
     // 1. Write to verification_audits
-    run(
+    await run(
       `INSERT INTO verification_audits (
-        id, sessionId, candidateMatchId, claimantUserId, attemptNumber,
-        challengeType, result, score, matchedCategories, ip,
-        algorithmVersion, createdAt
+        id, "sessionId", "candidateMatchId", "claimantUserId", "attemptNumber",
+        "challengeType", result, score, "matchedCategories", ip,
+        "algorithmVersion", "createdAt"
       ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)`,
       auditId,
       session.id,
@@ -218,8 +216,8 @@ export async function recordAuditAndEvidence(
     );
 
     // 2. Legacy blind_attempts synchronization
-    run(
-      "INSERT INTO blind_attempts (id, userId, reportId, accepted, createdAt) VALUES (?,?,?,?,?)",
+    await run(
+      'INSERT INTO blind_attempts (id, "userId", "reportId", accepted, "createdAt") VALUES (?,?,?,?,?)',
       id("attempt"),
       session.claimantUserId,
       session.foundReportId,
@@ -228,10 +226,10 @@ export async function recordAuditAndEvidence(
     );
 
     // 3. Phase 1 verification_evidence synchronization
-    run(
+    await run(
       `INSERT INTO verification_evidence (
-        id, candidateMatchId, itemId, question, ownerAnswer,
-        expectedEvidence, result, evidenceSource, createdAt
+        id, "candidateMatchId", "itemId", question, "ownerAnswer",
+        "expectedEvidence", result, "evidenceSource", "createdAt"
       ) VALUES (?,?,?,?,?,?,?,?,?)`,
       id("evid"),
       session.candidateMatchId,
@@ -246,9 +244,9 @@ export async function recordAuditAndEvidence(
 
     // 4. Synchronize candidate_matches table status if verified or failed
     if (state === "VERIFIED") {
-      run("UPDATE candidate_matches SET status='verified', updatedAt=? WHERE id=?", currentTime, session.candidateMatchId);
+      await run('UPDATE candidate_matches SET status=\'verified\', "updatedAt"=? WHERE id=?', currentTime, session.candidateMatchId);
     } else if (state === "REQUIRES_MANUAL_REVIEW") {
-      run("UPDATE candidate_matches SET status='verification_required', updatedAt=? WHERE id=?", currentTime, session.candidateMatchId);
+      await run('UPDATE candidate_matches SET status=\'verification_required\', "updatedAt"=? WHERE id=?', currentTime, session.candidateMatchId);
     }
   });
 }

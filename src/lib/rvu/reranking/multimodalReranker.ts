@@ -28,13 +28,13 @@ export async function rerankFoundCandidates(
   const notes: string[] = [];
 
   // 1. Fetch found report and found fingerprint
-  const foundReport = one<Report>("SELECT * FROM reports WHERE id=?", foundReportId);
+  const foundReport = await one<Report>("SELECT * FROM reports WHERE id=?", foundReportId);
   if (!foundReport) {
     throw new Error(`Found report not found: ${foundReportId}`);
   }
 
-  const rawFoundFp = one<any>(
-    "SELECT * FROM found_fingerprints WHERE foundReportId=?",
+  const rawFoundFp = await one<any>(
+    'SELECT * FROM found_fingerprints WHERE "foundReportId"=?',
     foundReportId
   );
   if (!rawFoundFp) {
@@ -68,7 +68,7 @@ export async function rerankFoundCandidates(
   }
 
   // Also query active registered lost items in the database to ensure full candidate coverage
-  const lostItems = all<ProtectedItem>(
+  const lostItems = await all<ProtectedItem>(
     "SELECT * FROM protected_items WHERE status='lost'"
   );
 
@@ -93,7 +93,7 @@ export async function rerankFoundCandidates(
 
   // 3. Multimodal Reranking for each candidate
   for (const [itemId, { item, vectorSim }] of candidateItemMap.entries()) {
-    const rawItemFp = one<any>("SELECT * FROM item_fingerprints WHERE itemId=?", itemId);
+    const rawItemFp = await one<any>('SELECT * FROM item_fingerprints WHERE "itemId"=?', itemId);
     if (!rawItemFp) continue;
 
     const itemFp: ItemFingerprint = {
@@ -107,12 +107,12 @@ export async function rerankFoundCandidates(
 
     let lostReport: Report | null = null;
     if (item.lostReportId) {
-      lostReport = one<Report>("SELECT * FROM reports WHERE id=?", item.lostReportId) || null;
+      lostReport = (await one<Report>("SELECT * FROM reports WHERE id=?", item.lostReportId)) || null;
     }
 
     // Retrieve Phase 4 baseline scorecard if exists
-    const existingMatch = one<any>(
-      "SELECT overallScore FROM candidate_matches WHERE foundReportId=? AND itemId=?",
+    const existingMatch = await one<any>(
+      'SELECT "overallScore" FROM candidate_matches WHERE "foundReportId"=? AND "itemId"=?',
       foundReportId,
       itemId
     );

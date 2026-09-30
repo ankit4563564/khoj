@@ -139,13 +139,13 @@ export async function GET(req: Request) {
       return errorRedirect(
         `Use your verified university Google account (@${domains().join(", @")}).`,
       );
-    let user = one<{
+    let user = await one<{
       id: string;
       googleId: string | null;
       verified: number;
       role: string;
     }>(
-      "SELECT id,googleId,verified,role FROM users WHERE email=?",
+      "SELECT id,\"googleId\",verified,role FROM users WHERE email=?",
       profile.email.toLowerCase(),
     );
     if (user && user.googleId && user.googleId !== profile.sub)
@@ -154,13 +154,13 @@ export async function GET(req: Request) {
       );
     if (user && !user.verified) {
       // Google proves control of the email; invalidate any pre-verification sessions/password.
-      run("DELETE FROM sessions WHERE userId=?", user.id);
-      run("UPDATE users SET password=NULL WHERE id=?", user.id);
+      await run("DELETE FROM sessions WHERE \"userId\"=?", user.id);
+      await run("UPDATE users SET password=NULL WHERE id=?", user.id);
     }
     if (!user) {
       const userId = id("user");
-      run(
-        "INSERT INTO users (id,name,email,studentId,department,verified,googleId,createdAt) VALUES (?,?,?,?,?,1,?,?)",
+      await run(
+        "INSERT INTO users (id,name,email,\"studentId\",department,verified,\"googleId\",\"createdAt\") VALUES (?,?,?,?,?,1,?,?)",
         userId,
         String(profile.name || "RVU Student").slice(0, 100),
         profile.email.toLowerCase(),
@@ -171,8 +171,8 @@ export async function GET(req: Request) {
       );
       user = { id: userId, googleId: profile.sub, verified: 1, role: "student" };
     } else
-      run(
-        "UPDATE users SET googleId=?,verified=1 WHERE id=?",
+      await run(
+        "UPDATE users SET \"googleId\"=?,verified=1 WHERE id=?",
         profile.sub,
         user.id,
       );

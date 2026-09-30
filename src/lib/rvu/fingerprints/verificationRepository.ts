@@ -4,7 +4,7 @@
  */
 
 import { id, now, one, all, run, transaction } from "@/lib/rvu/db";
-import type { VerificationEvidence, ProtectedItem, CandidateScoreCard } from "@/lib/rvu/types";
+import type { VerificationEvidence, ProtectedItem } from "@/lib/rvu/types";
 import {
   validateVerificationEvidenceInput,
   validateVerificationResult,
@@ -50,8 +50,8 @@ export async function createVerificationEvidence(
   const validated = validateVerificationEvidenceInput(input);
 
   // Validate candidate match and item existence
-  const candidate = one<{ id: string; itemId: string }>(
-    "SELECT id, itemId FROM candidate_matches WHERE id=?",
+  const candidate = await one<{ id: string; itemId: string }>(
+    'SELECT id, "itemId" FROM candidate_matches WHERE id=?',
     validated.candidateMatchId
   );
   if (!candidate) {
@@ -59,7 +59,7 @@ export async function createVerificationEvidence(
   }
 
   // Validate item ownership
-  const item = one<ProtectedItem>("SELECT userId FROM protected_items WHERE id=?", validated.itemId);
+  const item = await one<ProtectedItem>('SELECT "userId" FROM protected_items WHERE id=?', validated.itemId);
   if (!item) {
     throw new ValidationError(`Item #${validated.itemId} does not exist.`);
   }
@@ -71,11 +71,11 @@ export async function createVerificationEvidence(
   const evidenceId = input.id ? validateId(input.id, "id") : `evid-${id("").slice(0, 16)}`;
   const timestamp = now();
 
-  transaction(() => {
-    run(
+  await transaction(async () => {
+    await run(
       `INSERT INTO verification_evidence (
-        id, candidateMatchId, itemId, question, ownerAnswer,
-        expectedEvidence, result, evidenceSource, createdAt
+        id, "candidateMatchId", "itemId", question, "ownerAnswer",
+        "expectedEvidence", result, "evidenceSource", "createdAt"
       ) VALUES (?,?,?,?,?,?,?,?,?)`,
       evidenceId,
       validated.candidateMatchId,
@@ -89,7 +89,7 @@ export async function createVerificationEvidence(
     );
   });
 
-  const saved = one<RawVerificationEvidenceRow>(
+  const saved = await one<RawVerificationEvidenceRow>(
     "SELECT * FROM verification_evidence WHERE id=?",
     evidenceId
   );
@@ -112,8 +112,8 @@ export async function getEvidenceByCandidateId(
 ): Promise<VerificationEvidence[]> {
   const safeCandidateId = validateId(candidateMatchId, "candidateMatchId");
 
-  const candidate = one<{ id: string; itemId: string }>(
-    "SELECT id, itemId FROM candidate_matches WHERE id=?",
+  const candidate = await one<{ id: string; itemId: string }>(
+    'SELECT id, "itemId" FROM candidate_matches WHERE id=?',
     safeCandidateId
   );
   if (!candidate) return [];
@@ -122,14 +122,14 @@ export async function getEvidenceByCandidateId(
     if (!requestingUserId) {
       throw new AuthorizationError("Authentication required.");
     }
-    const item = one<ProtectedItem>("SELECT userId FROM protected_items WHERE id=?", candidate.itemId);
+    const item = await one<ProtectedItem>('SELECT "userId" FROM protected_items WHERE id=?', candidate.itemId);
     if (!item || item.userId !== requestingUserId) {
       throw new AuthorizationError("You do not have permission to view verification evidence for this item.");
     }
   }
 
-  const rows = all<RawVerificationEvidenceRow>(
-    "SELECT * FROM verification_evidence WHERE candidateMatchId=? ORDER BY createdAt DESC",
+  const rows = await all<RawVerificationEvidenceRow>(
+    'SELECT * FROM verification_evidence WHERE "candidateMatchId"=? ORDER BY "createdAt" DESC',
     safeCandidateId
   );
 
@@ -151,9 +151,9 @@ export async function updateEvidenceResult(
   const safeId = validateId(idStr, "evidence ID");
   const validatedResult = validateVerificationResult(result);
 
-  run("UPDATE verification_evidence SET result=? WHERE id=?", validatedResult, safeId);
+  await run("UPDATE verification_evidence SET result=? WHERE id=?", validatedResult, safeId);
 
-  const updated = one<RawVerificationEvidenceRow>(
+  const updated = await one<RawVerificationEvidenceRow>(
     "SELECT * FROM verification_evidence WHERE id=?",
     safeId
   );

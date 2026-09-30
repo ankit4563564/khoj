@@ -4,39 +4,72 @@ import type { Claim, Handover } from './types';
 
 export * from './recovery/index';
 
-export function ensureHandover(reportId: string, ownerId: string, point: string) {
-  const found = report(reportId);
+export async function ensureHandover(
+  reportId: string,
+  ownerId: string,
+  point: string,
+): Promise<void> {
+  const found = await report(reportId);
   if (!found) throw new HttpError(404, 'Report not found.');
-  run(
-    'INSERT OR IGNORE INTO handovers (reportId,ownerId,finderId,point,proposedLocation,state) VALUES (?,?,?,?,?,?)',
+  // handovers.reportId is PRIMARY KEY → ON CONFLICT DO NOTHING
+  await run(
+    `INSERT INTO handovers ("reportId","ownerId","finderId",point,"proposedLocation",state)
+     VALUES (?,?,?,?,?,?)
+     ON CONFLICT ("reportId") DO NOTHING`,
     reportId,
     ownerId,
     found.userId,
     point,
     point,
-    'RECOVERY_PENDING'
+    'RECOVERY_PENDING',
   );
 }
 
-export function completeHandover(reportId: string, actorId: string) {
-  const h = one<Handover>('SELECT * FROM handovers WHERE reportId=?', reportId);
+export async function completeHandover(
+  reportId: string,
+  actorId: string,
+): Promise<void> {
+  const h = await one<Handover>(
+    'SELECT * FROM handovers WHERE "reportId"=?',
+    reportId,
+  );
   if (!h || h.returnedAt || !h.ownerConfirmed || !h.finderConfirmed) return;
-  const found = report(reportId)!;
-  const c = one<Claim>("SELECT * FROM claims WHERE reportId=? AND status='approved'", reportId);
-  
-  run("UPDATE handovers SET returnedAt=?, state='RETURNED' WHERE reportId=?", now(), reportId);
-  run("UPDATE reports SET status='returned' WHERE id=?", reportId);
+  const found = (await report(reportId))!;
+  const c = await one<Claim>(
+    "SELECT * FROM claims WHERE \"reportId\"=? AND status='approved'",
+    reportId,
+  );
+
+  await run(
+    "UPDATE handovers SET \"returnedAt\"=?, state='RETURNED' WHERE \"reportId\"=?",
+    now(),
+    reportId,
+  );
+  await run("UPDATE reports SET status='returned' WHERE id=?", reportId);
   if (c) {
-    run("UPDATE claims SET status='returned' WHERE id=?", c.id);
+    await run("UPDATE claims SET status='returned' WHERE id=?", c.id);
     if (c.lostReportId) {
-      run("UPDATE reports SET status='returned' WHERE id=?", c.lostReportId);
-      run("UPDATE protected_items SET status='returned' WHERE lostReportId=?", c.lostReportId);
+      await run(
+        "UPDATE reports SET status='returned' WHERE id=?",
+        c.lostReportId,
+      );
+      await run(
+        "UPDATE protected_items SET status='returned' WHERE \"lostReportId\"=?",
+        c.lostReportId,
+      );
     }
   }
-  audit(actorId, reportId, 'Returned to verified owner after both sides confirmed');
-  notify(h.ownerId, `${found.title} returned. Welcome back!`, '/status');
-  const finder = one<{ role: string }>('SELECT role FROM users WHERE id=?', h.finderId);
+  await audit(actorId, reportId, 'Returned to verified owner after both sides confirmed');
+  await notify(h.ownerId, `${found.title} returned. Welcome back!`, '/status');
+  const finder = await one<{ role: string }>(
+    'SELECT role FROM users WHERE id=?',
+    h.finderId,
+  );
   if (finder?.role !== 'guest') {
-    notify(h.finderId, `${found.title} reunited with its owner. Thank you!`, '/status');
+    await notify(
+      h.finderId,
+      `${found.title} reunited with its owner. Thank you!`,
+      '/status',
+    );
   }
 }

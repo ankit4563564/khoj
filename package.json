@@ -8,6 +8,7 @@
     "start": "next start",
     "lint": "next lint",
     "staff": "node --env-file-if-exists=.env.local scripts/staff.mjs",
+    "db:init": "node scripts/init-db.mjs",
     "seed:demo": "node scripts/seed-demo.mjs",
     "test:integration": "node tests/rvu-e2e.mjs",
     "test:fingerprints": "npx tsx tests/fingerprints.test.mjs",
@@ -33,12 +34,14 @@
     "framer-motion": "^13.4.4",
     "lucide-react": "^0.475.0",
     "next": "15.5.24",
+    "pg": "^8.23.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1"
   },
   "devDependencies": {
     "@types/canvas-confetti": "^1.9.0",
     "@types/node": "^20.17.19",
+    "@types/pg": "^8.23.1",
     "@types/react": "^18.3.18",
     "@types/react-dom": "^18.3.5",
     "typescript": "^5.7.3"

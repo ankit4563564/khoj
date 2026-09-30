@@ -63,12 +63,12 @@ export async function createCandidateMatch(
   const validated = validateCandidateScoreCardInput(input);
 
   // Validate existence of target report and item
-  const found = one<Report>("SELECT id, kind FROM reports WHERE id=?", validated.foundReportId);
+  const found = await one<Report>("SELECT id, kind FROM reports WHERE id=?", validated.foundReportId);
   if (!found || found.kind !== "found") {
     throw new ValidationError(`Found report #${validated.foundReportId} does not exist.`);
   }
 
-  const item = one<ProtectedItem>("SELECT id FROM protected_items WHERE id=?", validated.itemId);
+  const item = await one<ProtectedItem>("SELECT id FROM protected_items WHERE id=?", validated.itemId);
   if (!item) {
     throw new ValidationError(`Protected item #${validated.itemId} does not exist.`);
   }
@@ -76,24 +76,24 @@ export async function createCandidateMatch(
   const candidateId = input.id ? validateId(input.id, "id") : `cand-${id("").slice(0, 16)}`;
   const timestamp = now();
 
-  transaction(() => {
-    run(
+  await transaction(async () => {
+    await run(
       `INSERT INTO candidate_matches (
-        id, foundReportId, itemId, vectorSimilarity, attributeScore,
-        uniqueClueScore, locationScore, timeScore, overallScore,
-        confidenceTier, status, evidence, createdAt, updatedAt
+        id, "foundReportId", "itemId", "vectorSimilarity", "attributeScore",
+        "uniqueClueScore", "locationScore", "timeScore", "overallScore",
+        "confidenceTier", status, evidence, "createdAt", "updatedAt"
       ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)
-      ON CONFLICT(foundReportId, itemId) DO UPDATE SET
-        vectorSimilarity=excluded.vectorSimilarity,
-        attributeScore=excluded.attributeScore,
-        uniqueClueScore=excluded.uniqueClueScore,
-        locationScore=excluded.locationScore,
-        timeScore=excluded.timeScore,
-        overallScore=excluded.overallScore,
-        confidenceTier=excluded.confidenceTier,
+      ON CONFLICT("foundReportId", "itemId") DO UPDATE SET
+        "vectorSimilarity"=excluded."vectorSimilarity",
+        "attributeScore"=excluded."attributeScore",
+        "uniqueClueScore"=excluded."uniqueClueScore",
+        "locationScore"=excluded."locationScore",
+        "timeScore"=excluded."timeScore",
+        "overallScore"=excluded."overallScore",
+        "confidenceTier"=excluded."confidenceTier",
         status=excluded.status,
         evidence=excluded.evidence,
-        updatedAt=excluded.updatedAt`,
+        "updatedAt"=excluded."updatedAt"`,
       candidateId,
       validated.foundReportId,
       validated.itemId,
@@ -111,8 +111,8 @@ export async function createCandidateMatch(
     );
   });
 
-  const saved = one<RawCandidateMatchRow>(
-    "SELECT * FROM candidate_matches WHERE foundReportId=? AND itemId=?",
+  const saved = await one<RawCandidateMatchRow>(
+    'SELECT * FROM candidate_matches WHERE "foundReportId"=? AND "itemId"=?',
     validated.foundReportId,
     validated.itemId
   );
@@ -134,14 +134,14 @@ export async function getCandidateMatchById(
   isStaffOrSystem = false
 ): Promise<CandidateScoreCard | null> {
   const safeId = validateId(idStr, "candidate match ID");
-  const row = one<RawCandidateMatchRow>("SELECT * FROM candidate_matches WHERE id=?", safeId);
+  const row = await one<RawCandidateMatchRow>("SELECT * FROM candidate_matches WHERE id=?", safeId);
   if (!row) return null;
 
   if (!isStaffOrSystem) {
     if (!requestingUserId) {
       throw new AuthorizationError("Authentication required to view candidate scorecards.");
     }
-    const item = one<ProtectedItem>("SELECT userId FROM protected_items WHERE id=?", row.itemId);
+    const item = await one<ProtectedItem>('SELECT "userId" FROM protected_items WHERE id=?', row.itemId);
     if (!item || item.userId !== requestingUserId) {
       throw new AuthorizationError("You do not have permission to view this candidate scorecard.");
     }
@@ -165,14 +165,14 @@ export async function listCandidatesForItem(
     if (!requestingUserId) {
       throw new AuthorizationError("Authentication required.");
     }
-    const item = one<ProtectedItem>("SELECT userId FROM protected_items WHERE id=?", safeItemId);
+    const item = await one<ProtectedItem>('SELECT "userId" FROM protected_items WHERE id=?', safeItemId);
     if (!item || item.userId !== requestingUserId) {
       throw new AuthorizationError("You cannot view candidates for an item you do not own.");
     }
   }
 
-  const rows = all<RawCandidateMatchRow>(
-    "SELECT * FROM candidate_matches WHERE itemId=? ORDER BY overallScore DESC",
+  const rows = await all<RawCandidateMatchRow>(
+    'SELECT * FROM candidate_matches WHERE "itemId"=? ORDER BY "overallScore" DESC',
     safeItemId
   );
 
@@ -195,14 +195,14 @@ export async function updateCandidateStatus(
   const validatedStatus = validateCandidateStatus(newStatus);
   const timestamp = now();
 
-  run(
-    "UPDATE candidate_matches SET status=?, updatedAt=? WHERE id=?",
+  await run(
+    'UPDATE candidate_matches SET status=?, "updatedAt"=? WHERE id=?',
     validatedStatus,
     timestamp,
     safeId
   );
 
-  const updated = one<RawCandidateMatchRow>("SELECT * FROM candidate_matches WHERE id=?", safeId);
+  const updated = await one<RawCandidateMatchRow>("SELECT * FROM candidate_matches WHERE id=?", safeId);
   if (!updated) {
     throw new ValidationError(`Candidate match #${safeId} not found.`);
   }

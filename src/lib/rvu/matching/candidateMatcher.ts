@@ -37,7 +37,7 @@ export async function matchFoundItem(
   const ambiguityMargin = options.ambiguityMargin ?? 0.08;
 
   // 1. Retrieve target Found Report and Found Fingerprint
-  const foundReport = one<Report>("SELECT * FROM reports WHERE id=?", foundReportId);
+  const foundReport = await one<Report>("SELECT * FROM reports WHERE id=?", foundReportId);
   if (!foundReport || foundReport.kind !== "found") {
     return {
       foundReportId,
@@ -49,8 +49,8 @@ export async function matchFoundItem(
     };
   }
 
-  const rawFoundFp = one<any>(
-    "SELECT * FROM found_fingerprints WHERE foundReportId=?",
+  const rawFoundFp = await one<any>(
+    'SELECT * FROM found_fingerprints WHERE "foundReportId"=?',
     foundReportId
   );
   if (!rawFoundFp) {
@@ -77,10 +77,10 @@ export async function matchFoundItem(
   // By default, consider items marked 'lost' or with open lost reports
   let eligibleItems: ProtectedItem[] = [];
   if (options.allowUnmarkedLost) {
-    eligibleItems = all<ProtectedItem>("SELECT * FROM protected_items");
+    eligibleItems = await all<ProtectedItem>("SELECT * FROM protected_items");
   } else {
-    eligibleItems = all<ProtectedItem>(
-      "SELECT * FROM protected_items WHERE status='lost' OR lostReportId IS NOT NULL"
+    eligibleItems = await all<ProtectedItem>(
+      'SELECT * FROM protected_items WHERE status=\'lost\' OR "lostReportId" IS NOT NULL'
     );
   }
 
@@ -108,8 +108,8 @@ export async function matchFoundItem(
     }
 
     // Retrieve item fingerprint
-    const rawItemFp = one<any>(
-      "SELECT * FROM item_fingerprints WHERE itemId=?",
+    const rawItemFp = await one<any>(
+      'SELECT * FROM item_fingerprints WHERE "itemId"=?',
       item.id
     );
     if (!rawItemFp) continue;
@@ -126,7 +126,7 @@ export async function matchFoundItem(
     // Retrieve corresponding lost report if available
     let lostReport: Report | null = null;
     if (item.lostReportId) {
-      lostReport = one<Report>("SELECT * FROM reports WHERE id=?", item.lostReportId) || null;
+      lostReport = (await one<Report>("SELECT * FROM reports WHERE id=?", item.lostReportId)) || null;
     }
 
     // Generate scorecard

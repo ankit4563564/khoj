@@ -94,20 +94,20 @@ export async function GET(request: NextRequest) {
     }
 
     // Sync with KHOJ internal user store (lookup by email OR existing googleId)
-    let user = one<{
+    let user = await one<{
       id: string;
       googleId: string | null;
-      verified: number;
+      verified: number | boolean;
       role: string;
     }>(
-      "SELECT id,googleId,verified,role FROM users WHERE email=? OR googleId=?",
+      'SELECT id, "googleId", verified, role FROM users WHERE email=? OR "googleId"=?',
       email,
       authUser.id,
     );
 
     if (user && !user.verified) {
-      run("DELETE FROM sessions WHERE userId=?", user.id);
-      run("UPDATE users SET password=NULL WHERE id=?", user.id);
+      await run('DELETE FROM sessions WHERE "userId"=?', user.id);
+      await run("UPDATE users SET password=NULL WHERE id=?", user.id);
     }
 
     if (!user) {
@@ -116,8 +116,8 @@ export async function GET(request: NextRequest) {
         authUser.user_metadata?.full_name ||
         authUser.user_metadata?.name ||
         "RVU Student";
-      run(
-        "INSERT INTO users (id,name,email,studentId,department,verified,googleId,createdAt) VALUES (?,?,?,?,?,1,?,?)",
+      await run(
+        'INSERT INTO users (id,name,email,"studentId",department,verified,"googleId","createdAt") VALUES (?,?,?,?,?,true,?,?)',
         userId,
         String(name).slice(0, 100),
         email,
@@ -126,10 +126,10 @@ export async function GET(request: NextRequest) {
         authUser.id,
         now(),
       );
-      user = { id: userId, googleId: authUser.id, verified: 1, role: "student" };
+      user = { id: userId, googleId: authUser.id, verified: true, role: "student" };
     } else {
-      run(
-        "UPDATE users SET googleId=?,verified=1,email=? WHERE id=?",
+      await run(
+        'UPDATE users SET "googleId"=?,verified=true,email=? WHERE id=?',
         authUser.id,
         email,
         user.id,

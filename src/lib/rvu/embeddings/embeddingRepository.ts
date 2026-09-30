@@ -1,9 +1,9 @@
 /**
  * KHOJ — Fingerprint Embedding Repository
- * Persists and manages vector embedding records across SQLite and Supabase.
+ * Persists and manages vector embedding records across PostgreSQL and Supabase.
  */
 
-import { id, now, one, all, run, transaction } from "@/lib/rvu/db";
+import { id, now, one, all, run } from "@/lib/rvu/db";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { EMBEDDING_CONFIG } from "./embeddingConfig";
 import type {
@@ -18,7 +18,7 @@ interface RawEmbeddingRow {
   sourceId: string;
   sourceType: string;
   modality: string;
-  embedding: string; // JSON string in SQLite
+  embedding: string; // JSON string in DB
   modelName: string;
   modelVersion: string;
   dimension: number;
@@ -94,9 +94,9 @@ export async function upsertEmbedding(
   const embeddingJson = JSON.stringify(params.embedding);
   const currentTime = now();
 
-  // 1. Persist to local SQLite
-  const existing = one<RawEmbeddingRow>(
-    "SELECT * FROM fingerprint_embeddings WHERE sourceId=? AND modality=? AND modelName=? AND modelVersion=?",
+  // 1. Persist to Postgres
+  const existing = await one<RawEmbeddingRow>(
+    'SELECT * FROM fingerprint_embeddings WHERE "sourceId"=? AND modality=? AND "modelName"=? AND "modelVersion"=?',
     params.sourceId,
     params.modality,
     modelName,
@@ -107,9 +107,9 @@ export async function upsertEmbedding(
 
   if (existing) {
     recordId = existing.id;
-    run(
+    await run(
       `UPDATE fingerprint_embeddings 
-       SET embedding=?, dimension=?, contentHash=?, status=?, errorMessage=?, category=?, metadata=?, updatedAt=? 
+       SET embedding=?, dimension=?, "contentHash"=?, status=?, "errorMessage"=?, category=?, metadata=?, "updatedAt"=? 
        WHERE id=?`,
       embeddingJson,
       dimension,
@@ -123,9 +123,9 @@ export async function upsertEmbedding(
     );
   } else {
     recordId = id("emb");
-    run(
+    await run(
       `INSERT INTO fingerprint_embeddings 
-       (id, sourceId, sourceType, modality, embedding, modelName, modelVersion, dimension, contentHash, status, errorMessage, category, metadata, createdAt, updatedAt)
+       (id, "sourceId", "sourceType", modality, embedding, "modelName", "modelVersion", dimension, "contentHash", status, "errorMessage", category, metadata, "createdAt", "updatedAt")
        VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`,
       recordId,
       params.sourceId,
@@ -173,7 +173,7 @@ export async function upsertEmbedding(
     }
   }
 
-  const updated = one<RawEmbeddingRow>(
+  const updated = await one<RawEmbeddingRow>(
     "SELECT * FROM fingerprint_embeddings WHERE id=?",
     recordId
   );
@@ -189,8 +189,8 @@ export async function getEmbedding(
   modelName: string = EMBEDDING_CONFIG.modelName,
   modelVersion: string = EMBEDDING_CONFIG.modelVersion
 ): Promise<FingerprintEmbeddingRecord | null> {
-  const row = one<RawEmbeddingRow>(
-    "SELECT * FROM fingerprint_embeddings WHERE sourceId=? AND modality=? AND modelName=? AND modelVersion=?",
+  const row = await one<RawEmbeddingRow>(
+    'SELECT * FROM fingerprint_embeddings WHERE "sourceId"=? AND modality=? AND "modelName"=? AND "modelVersion"=?',
     sourceId,
     modality,
     modelName,
@@ -204,8 +204,8 @@ export async function getEmbedding(
  */
 export async function markEmbeddingsStale(sourceId: string): Promise<void> {
   const currentTime = now();
-  run(
-    "UPDATE fingerprint_embeddings SET status='stale', updatedAt=? WHERE sourceId=?",
+  await run(
+    'UPDATE fingerprint_embeddings SET status=\'stale\', "updatedAt"=? WHERE "sourceId"=?',
     currentTime,
     sourceId
   );
@@ -230,7 +230,7 @@ export async function listReadyEmbeddings(
   sourceType: EmbeddingSourceType,
   categoryFilter?: string
 ): Promise<FingerprintEmbeddingRecord[]> {
-  let query = "SELECT * FROM fingerprint_embeddings WHERE sourceType=? AND status='ready'";
+  let query = 'SELECT * FROM fingerprint_embeddings WHERE "sourceType"=? AND status=\'ready\'';
   const args: any[] = [sourceType];
 
   if (categoryFilter) {
@@ -238,6 +238,6 @@ export async function listReadyEmbeddings(
     args.push(categoryFilter);
   }
 
-  const rows = all<RawEmbeddingRow>(query, ...args);
+  const rows = await all<RawEmbeddingRow>(query, ...args);
   return rows.map(parseRow);
 }

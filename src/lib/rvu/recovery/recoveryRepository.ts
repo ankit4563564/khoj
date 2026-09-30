@@ -74,18 +74,18 @@ export async function createRecoveryCase(
   const token = `fat-${randomUUID().replaceAll("-", "")}`;
   const tokenExpiry = new Date(Date.now() + RECOVERY_CONFIG.ACTION_TOKEN_EXPIRY_MS).toISOString();
 
-  transaction(() => {
-    run(
+  await transaction(async () => {
+    await run(
       `INSERT INTO handovers (
-        reportId, ownerId, finderId, candidateMatchId, state,
-        ownerConfirmed, finderConfirmed, point, proposedLocation,
-        proposedDate, proposedTimeWindow, proposedBy,
-        finderActionToken, tokenExpiresAt, createdAt, updatedAt, workflowVersion
+        "reportId", "ownerId", "finderId", "candidateMatchId", state,
+        "ownerConfirmed", "finderConfirmed", point, "proposedLocation",
+        "proposedDate", "proposedTimeWindow", "proposedBy",
+        "finderActionToken", "tokenExpiresAt", "createdAt", "updatedAt", "workflowVersion"
       ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
-      ON CONFLICT(reportId) DO UPDATE SET
-        ownerId=excluded.ownerId,
-        candidateMatchId=COALESCE(excluded.candidateMatchId, handovers.candidateMatchId),
-        updatedAt=excluded.updatedAt`,
+      ON CONFLICT("reportId") DO UPDATE SET
+        "ownerId"=excluded."ownerId",
+        "candidateMatchId"=COALESCE(excluded."candidateMatchId", handovers."candidateMatchId"),
+        "updatedAt"=excluded."updatedAt"`,
       reportId,
       ownerId,
       finderId,
@@ -106,7 +106,7 @@ export async function createRecoveryCase(
     );
   });
 
-  const row = one<RawHandoverRow>("SELECT * FROM handovers WHERE reportId=?", reportId);
+  const row = await one<RawHandoverRow>('SELECT * FROM handovers WHERE "reportId"=?', reportId);
   if (!row) throw new Error("Failed to create recovery case record.");
   return parseHandoverRow(row);
 }
@@ -115,7 +115,7 @@ export async function createRecoveryCase(
  * Retrieves a recovery case by found report ID.
  */
 export async function getRecoveryCaseByReportId(reportId: string): Promise<RecoveryCase | null> {
-  const row = one<RawHandoverRow>("SELECT * FROM handovers WHERE reportId=?", reportId);
+  const row = await one<RawHandoverRow>('SELECT * FROM handovers WHERE "reportId"=?', reportId);
   return row ? parseHandoverRow(row) : null;
 }
 
@@ -123,7 +123,7 @@ export async function getRecoveryCaseByReportId(reportId: string): Promise<Recov
  * Retrieves a recovery case by candidate match ID.
  */
 export async function getRecoveryCaseByCandidateId(candidateMatchId: string): Promise<RecoveryCase | null> {
-  const row = one<RawHandoverRow>("SELECT * FROM handovers WHERE candidateMatchId=?", candidateMatchId);
+  const row = await one<RawHandoverRow>('SELECT * FROM handovers WHERE "candidateMatchId"=?', candidateMatchId);
   return row ? parseHandoverRow(row) : null;
 }
 
@@ -132,7 +132,7 @@ export async function getRecoveryCaseByCandidateId(candidateMatchId: string): Pr
  */
 export async function getRecoveryCaseByActionToken(token: string): Promise<RecoveryCase | null> {
   if (!token || typeof token !== "string" || token.trim().length < 10) return null;
-  const row = one<RawHandoverRow>("SELECT * FROM handovers WHERE finderActionToken=?", token.trim());
+  const row = await one<RawHandoverRow>('SELECT * FROM handovers WHERE "finderActionToken"=?', token.trim());
   return row ? parseHandoverRow(row) : null;
 }
 
@@ -145,24 +145,24 @@ export async function updateRecoveryCase(
 ): Promise<RecoveryCase> {
   const timestamp = now();
 
-  transaction(() => {
-    run(
+  await transaction(async () => {
+    await run(
       `UPDATE handovers SET
         state=COALESCE(?, state),
         point=COALESCE(?, point),
-        proposedLocation=COALESCE(?, proposedLocation),
-        proposedDate=COALESCE(?, proposedDate),
-        proposedTimeWindow=COALESCE(?, proposedTimeWindow),
-        proposedBy=COALESCE(?, proposedBy),
-        ownerConfirmed=COALESCE(?, ownerConfirmed),
-        finderConfirmed=COALESCE(?, finderConfirmed),
-        ownerConfirmedAt=COALESCE(?, ownerConfirmedAt),
-        finderConfirmedAt=COALESCE(?, finderConfirmedAt),
-        returnedAt=COALESCE(?, returnedAt),
-        issueReason=COALESCE(?, issueReason),
-        cancellationReason=COALESCE(?, cancellationReason),
-        updatedAt=?
-      WHERE reportId=?`,
+        "proposedLocation"=COALESCE(?, "proposedLocation"),
+        "proposedDate"=COALESCE(?, "proposedDate"),
+        "proposedTimeWindow"=COALESCE(?, "proposedTimeWindow"),
+        "proposedBy"=COALESCE(?, "proposedBy"),
+        "ownerConfirmed"=COALESCE(?, "ownerConfirmed"),
+        "finderConfirmed"=COALESCE(?, "finderConfirmed"),
+        "ownerConfirmedAt"=COALESCE(?, "ownerConfirmedAt"),
+        "finderConfirmedAt"=COALESCE(?, "finderConfirmedAt"),
+        "returnedAt"=COALESCE(?, "returnedAt"),
+        "issueReason"=COALESCE(?, "issueReason"),
+        "cancellationReason"=COALESCE(?, "cancellationReason"),
+        "updatedAt"=?
+      WHERE "reportId"=?`,
       updates.state ?? null,
       updates.point ?? updates.proposedLocation ?? null,
       updates.proposedLocation ?? updates.point ?? null,
@@ -181,7 +181,7 @@ export async function updateRecoveryCase(
     );
   });
 
-  const row = one<RawHandoverRow>("SELECT * FROM handovers WHERE reportId=?", reportId);
+  const row = await one<RawHandoverRow>('SELECT * FROM handovers WHERE "reportId"=?', reportId);
   if (!row) throw new Error(`Recovery case #${reportId} not found.`);
   return parseHandoverRow(row);
 }
@@ -202,11 +202,11 @@ export async function recordRecoveryEvent(
   const eventId = `revt-${id("").slice(0, 16)}`;
   const timestamp = now();
 
-  transaction(() => {
-    run(
+  await transaction(async () => {
+    await run(
       `INSERT INTO recovery_events (
-        id, reportId, candidateMatchId, actorId, actorRole,
-        eventType, fromState, toState, metadata, createdAt
+        id, "reportId", "candidateMatchId", "actorId", "actorRole",
+        "eventType", "fromState", "toState", metadata, "createdAt"
       ) VALUES (?,?,?,?,?,?,?,?,?,?)`,
       eventId,
       reportId,
@@ -239,8 +239,8 @@ export async function recordRecoveryEvent(
  * Lists recovery events for a given report.
  */
 export async function listRecoveryEvents(reportId: string): Promise<RecoveryEvent[]> {
-  const rows = all<any>(
-    "SELECT * FROM recovery_events WHERE reportId=? ORDER BY createdAt ASC",
+  const rows = await all<any>(
+    'SELECT * FROM recovery_events WHERE "reportId"=? ORDER BY "createdAt" ASC',
     reportId
   );
   return rows.map((r) => ({

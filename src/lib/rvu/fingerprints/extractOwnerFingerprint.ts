@@ -97,7 +97,7 @@ export async function extractAndSaveOwnerFingerprint(
     for (const imgId of input.imageIds.slice(0, 3)) {
       if (!imgId || typeof imgId !== "string") continue;
       try {
-        const row = one<{ mime: string; content: Uint8Array }>(
+        const row = await one<{ mime: string; content: Uint8Array }>(
           "SELECT mime, content FROM uploads WHERE id=?",
           imgId
         );

@@ -70,7 +70,7 @@ export async function startVerificationSession(
   }
 
   // Retrieve protected item
-  const item = one<ProtectedItem>("SELECT * FROM protected_items WHERE id=?", candidate.itemId);
+  const item = await one<ProtectedItem>("SELECT * FROM protected_items WHERE id=?", candidate.itemId);
   if (!item) {
     throw new HttpError(404, "Protected item record not found.");
   }
@@ -213,7 +213,7 @@ export async function submitVerificationAnswer(
   }
 
   // Fetch item and owner fingerprint
-  const item = one<ProtectedItem>("SELECT * FROM protected_items WHERE id=?", session.itemId);
+  const item = await one<ProtectedItem>("SELECT * FROM protected_items WHERE id=?", session.itemId);
   if (!item) {
     throw new HttpError(404, "Protected item not found.");
   }
@@ -279,7 +279,7 @@ export async function adminReviewVerificationSession(
   staffUserId: string,
   note = ""
 ): Promise<VerificationSession> {
-  const staff = one<{ id: string; role: string }>("SELECT id, role FROM users WHERE id=?", staffUserId);
+  const staff = await one<{ id: string; role: string }>("SELECT id, role FROM users WHERE id=?", staffUserId);
   if (!staff || staff.role !== "staff") {
     throw new HttpError(403, "Only authorized staff can perform manual verification reviews.");
   }

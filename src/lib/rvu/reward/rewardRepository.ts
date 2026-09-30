@@ -47,12 +47,12 @@ function parseRewardRow(row: RawRewardRow): RewardRecord {
 }
 
 export async function getRewardByReportId(reportId: string): Promise<RewardRecord | null> {
-  const row = one<RawRewardRow>("SELECT * FROM rewards WHERE reportId=?", reportId);
+  const row = await one<RawRewardRow>('SELECT * FROM rewards WHERE "reportId"=?', reportId);
   return row ? parseRewardRow(row) : null;
 }
 
 export async function getRewardById(idStr: string): Promise<RewardRecord | null> {
-  const row = one<RawRewardRow>("SELECT * FROM rewards WHERE id=?", idStr);
+  const row = await one<RawRewardRow>("SELECT * FROM rewards WHERE id=?", idStr);
   return row ? parseRewardRow(row) : null;
 }
 
@@ -62,12 +62,12 @@ export async function createRewardRecord(
   const rewardId = id("rew");
   const ts = now();
 
-  run(
+  await run(
     `INSERT INTO rewards (
-      id, reportId, recoveryCaseId, ownerId, finderReference,
-      amountInr, state, finderUpiId, ownerPaymentReportedAt,
-      finderPaymentConfirmedAt, completedAt, cancellationReason,
-      disputeReason, createdAt, updatedAt, workflowVersion
+      id, "reportId", "recoveryCaseId", "ownerId", "finderReference",
+      "amountInr", state, "finderUpiId", "ownerPaymentReportedAt",
+      "finderPaymentConfirmedAt", "completedAt", "cancellationReason",
+      "disputeReason", "createdAt", "updatedAt", "workflowVersion"
     ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     rewardId,
     data.reportId,
@@ -109,17 +109,17 @@ export async function updateRewardRecord(
     updatedAt: now(),
   };
 
-  run(
+  await run(
     `UPDATE rewards SET
       state = ?,
-      finderUpiId = ?,
-      ownerPaymentReportedAt = ?,
-      finderPaymentConfirmedAt = ?,
-      completedAt = ?,
-      cancellationReason = ?,
-      disputeReason = ?,
-      updatedAt = ?
-    WHERE reportId = ?`,
+      "finderUpiId" = ?,
+      "ownerPaymentReportedAt" = ?,
+      "finderPaymentConfirmedAt" = ?,
+      "completedAt" = ?,
+      "cancellationReason" = ?,
+      "disputeReason" = ?,
+      "updatedAt" = ?
+    WHERE "reportId" = ?`,
     merged.state,
     merged.finderUpiId,
     merged.ownerPaymentReportedAt || null,
@@ -140,10 +140,10 @@ export async function recordRewardEvent(
   const eventId = id("rewevt");
   const ts = now();
 
-  run(
+  await run(
     `INSERT INTO reward_events (
-      id, rewardId, reportId, actorId, actorRole,
-      eventType, fromState, toState, metadata, createdAt
+      id, "rewardId", "reportId", "actorId", "actorRole",
+      "eventType", "fromState", "toState", metadata, "createdAt"
     ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     eventId,
     event.rewardId,
@@ -178,8 +178,8 @@ export async function getRewardEvents(reportId: string): Promise<RewardEvent[]> 
     createdAt: string;
   }
 
-  const rows = all<RawEventRow>(
-    "SELECT * FROM reward_events WHERE reportId=? ORDER BY createdAt ASC",
+  const rows = await all<RawEventRow>(
+    'SELECT * FROM reward_events WHERE "reportId"=? ORDER BY "createdAt" ASC',
     reportId
   );
 

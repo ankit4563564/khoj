@@ -8,13 +8,13 @@ export async function sendAccountLink(
   origin: string,
 ) {
   const token = secret();
-  run("DELETE FROM tokens WHERE userId=? AND purpose=?", userId, purpose);
-  run(
-    "INSERT INTO tokens VALUES (?,?,?,?)",
+  await run("DELETE FROM tokens WHERE \"userId\"=? AND purpose=?", userId, purpose);
+  await run(
+    'INSERT INTO tokens VALUES (?,?,?,?)',
     hash(token),
     userId,
     purpose,
-    Date.now() + 3600000,
+    Date.now() + 3_600_000,
   );
   const url = `${process.env.APP_URL || origin}/${purpose}?token=${token}`;
   if (!process.env.RESEND_API_KEY || !process.env.EMAIL_FROM) {

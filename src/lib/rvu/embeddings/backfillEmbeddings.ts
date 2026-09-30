@@ -36,11 +36,11 @@ export async function backfillFingerprintEmbeddings(options: {
   };
 
   // 1. Backfill Owner Items
-  const items = all<{ itemId: string }>("SELECT itemId FROM item_fingerprints");
+  const items = await all<{ itemId: string }>('SELECT "itemId" FROM item_fingerprints');
   for (const item of items) {
     summary.ownerItemsProcessed++;
     try {
-      const record = await generateOwnerItemEmbedding(item.itemId, {
+      await generateOwnerItemEmbedding(item.itemId, {
         geminiApiKey: options.geminiApiKey,
       });
       // If created_at == updated_at and it was just created
@@ -56,8 +56,8 @@ export async function backfillFingerprintEmbeddings(options: {
   }
 
   // 2. Backfill Found Reports
-  const reports = all<{ foundReportId: string }>(
-    "SELECT foundReportId FROM found_fingerprints"
+  const reports = await all<{ foundReportId: string }>(
+    'SELECT "foundReportId" FROM found_fingerprints'
   );
   for (const rep of reports) {
     summary.foundReportsProcessed++;
