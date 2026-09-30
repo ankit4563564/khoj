@@ -9,8 +9,7 @@
  *   DATABASE_URL — Supabase connection string
  *   Get it from: Supabase → Project Settings → Database → Connection string → URI
  *
- * For Vercel (serverless): use Transaction mode pooler URL (port 6543)
- * For Railway/Render (persistent server): use Session mode or direct URL (port 5432)
+ * For Vercel (serverless): use Supabase Transaction mode pooler URL (port 6543)
  */
 
 import { Pool, type PoolClient } from 'pg';
@@ -31,8 +30,7 @@ function getPool(): Pool {
       throw new Error(
         'DATABASE_URL environment variable is required.\n' +
         'Get it from: Supabase → Project Settings → Database → Connection string → URI\n' +
-        'For Vercel: use the Transaction mode pooler URL (port 6543).\n' +
-        'For Railway/Render: use the Session mode or direct URL (port 5432).',
+        'Configure the Transaction mode pooler URL (port 6543) in Vercel.',
       );
     }
     const isLocal =

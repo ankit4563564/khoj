@@ -1,5 +1,5 @@
 -- =============================================================================
--- KHOJ — Complete PostgreSQL Schema for Supabase / Railway
+-- KHOJ — Complete PostgreSQL Schema for Supabase
 -- =============================================================================
 
 -- Drop older draft tables if they were created with snake_case columns
