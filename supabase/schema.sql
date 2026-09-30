@@ -17,6 +17,8 @@ DROP TABLE IF EXISTS
     candidate_matches,
     found_fingerprints,
     item_fingerprints,
+    blind_attempts,
+    recovery_events,
     found_ids,
     identity_audit,
     identity_links,
