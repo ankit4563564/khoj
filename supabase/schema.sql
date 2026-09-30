@@ -2,6 +2,39 @@
 -- KHOJ — Complete PostgreSQL Schema for Supabase / Railway
 -- =============================================================================
 
+-- Drop older draft tables if they were created with snake_case columns
+DROP TABLE IF EXISTS
+    pilot_incidents,
+    pilot_ground_truth,
+    recovery_feedback,
+    pipeline_events,
+    reward_events,
+    rewards,
+    verification_audits,
+    verification_sessions,
+    fingerprint_embeddings,
+    verification_evidence,
+    candidate_matches,
+    found_fingerprints,
+    item_fingerprints,
+    found_ids,
+    identity_audit,
+    identity_links,
+    campus_directory,
+    rate_limits,
+    sessions,
+    activity,
+    audit,
+    notifications,
+    matches,
+    handovers,
+    claims,
+    protected_items,
+    reports,
+    uploads,
+    users
+CASCADE;
+
 CREATE TABLE IF NOT EXISTS users (
     id TEXT PRIMARY KEY,
     name TEXT NOT NULL,
