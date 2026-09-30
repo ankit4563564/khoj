@@ -23,6 +23,8 @@ DROP TABLE IF EXISTS
     identity_audit,
     identity_links,
     campus_directory,
+    tokens,
+    guest_sessions,
     rate_limits,
     sessions,
     activity,
@@ -100,7 +102,8 @@ CREATE TABLE IF NOT EXISTS claims (
     proof TEXT NOT NULL,
     status TEXT NOT NULL DEFAULT 'pending',
     "staffNote" TEXT NOT NULL DEFAULT '',
-    "createdAt" TEXT NOT NULL DEFAULT ''
+    "createdAt" TEXT NOT NULL DEFAULT '',
+    UNIQUE("reportId", "userId")
 );
 
 CREATE TABLE IF NOT EXISTS handovers (
@@ -144,6 +147,7 @@ CREATE TABLE IF NOT EXISTS notifications (
     "userId" TEXT NOT NULL,
     title TEXT NOT NULL,
     href TEXT NOT NULL,
+    read INTEGER NOT NULL DEFAULT 0,
     "createdAt" TEXT NOT NULL DEFAULT ''
 );
 
@@ -165,16 +169,28 @@ CREATE TABLE IF NOT EXISTS activity (
 );
 
 CREATE TABLE IF NOT EXISTS sessions (
-    id TEXT PRIMARY KEY,
+    token TEXT PRIMARY KEY,
     "userId" TEXT NOT NULL,
-    "createdAt" TEXT NOT NULL DEFAULT '',
-    "expiresAt" TEXT NOT NULL DEFAULT ''
+    expires BIGINT NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS tokens (
+    token TEXT PRIMARY KEY,
+    "userId" TEXT NOT NULL,
+    purpose TEXT NOT NULL,
+    expires BIGINT NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS guest_sessions (
+    token TEXT PRIMARY KEY,
+    "userId" TEXT NOT NULL,
+    expires BIGINT NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS rate_limits (
     key TEXT PRIMARY KEY,
     count INTEGER NOT NULL,
-    "resetAt" BIGINT NOT NULL
+    expires BIGINT NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS identity_links (
@@ -471,3 +487,10 @@ CREATE INDEX IF NOT EXISTS idx_pilot_gt_report ON pilot_ground_truth("reportId")
 CREATE INDEX IF NOT EXISTS idx_pilot_gt_item ON pilot_ground_truth("trueItemId");
 CREATE INDEX IF NOT EXISTS idx_pilot_incidents_report ON pilot_incidents("reportId");
 CREATE INDEX IF NOT EXISTS idx_pilot_incidents_status ON pilot_incidents(status);
+CREATE INDEX IF NOT EXISTS idx_sessions_user ON sessions("userId");
+CREATE INDEX IF NOT EXISTS idx_tokens_user ON tokens("userId");
+CREATE INDEX IF NOT EXISTS idx_guest_sessions_user ON guest_sessions("userId");
+CREATE INDEX IF NOT EXISTS idx_reports_user ON reports("userId");
+CREATE INDEX IF NOT EXISTS idx_reports_kind ON reports(kind, status);
+CREATE INDEX IF NOT EXISTS idx_claims_user ON claims("userId");
+CREATE INDEX IF NOT EXISTS idx_notifications_user ON notifications("userId", "createdAt" DESC);

@@ -172,7 +172,7 @@ export async function GET(req: Request) {
       user = { id: userId, googleId: profile.sub, verified: 1, role: "student" };
     } else
       await run(
-        "UPDATE users SET \"googleId\"=?,verified=1 WHERE id=?",
+        'UPDATE users SET "googleId"=?,verified=true WHERE id=?',
         profile.sub,
         user.id,
       );

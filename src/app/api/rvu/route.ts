@@ -243,7 +243,7 @@ export async function POST(req: Request) {
         if (password) {
           await run("UPDATE users SET password=? WHERE id=?", password, entry.userId);
           await run("DELETE FROM sessions WHERE \"userId\"=?", entry.userId);
-        } else await run("UPDATE users SET verified=1 WHERE id=?", entry.userId);
+        } else await run('UPDATE users SET verified=true WHERE id=?', entry.userId);
         await run("DELETE FROM tokens WHERE token=?", token);
       });
       await createSession(entry.userId);
